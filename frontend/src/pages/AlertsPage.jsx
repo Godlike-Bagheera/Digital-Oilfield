@@ -48,9 +48,9 @@ export default function AlertsPage() {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 rounded-xl border border-zinc-800/80 bg-[#121215] w-1/3"></div>
+          <div className="h-8 rounded-xl border border-border/80 bg-card w-1/3"></div>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 rounded-xl border border-zinc-800/80 bg-[#121215]"></div>
+            <div key={i} className="h-20 rounded-xl border border-border/80 bg-card"></div>
           ))}
         </div>
       </div>
@@ -59,7 +59,7 @@ export default function AlertsPage() {
 
   return (
     <div className="animate-fade-in-up">
-      <h1 className="text-3xl font-bold mb-6 text-zinc-50">Активные алерты</h1>
+      <h1 className="text-3xl font-bold mb-6 text-primary">Активные алерты</h1>
       <div className="space-y-3">
         {alerts.length === 0 && (
           <div className="text-center py-12 rounded-2xl border border-emerald-500/20 bg-emerald-500/10">
@@ -71,12 +71,12 @@ export default function AlertsPage() {
         {alerts.map((alert) => (
           <div
             key={alert.id}
-            className="rounded-xl border border-zinc-800/80 bg-[#121215] p-4 shadow-lg ring-1 ring-white/5 hover:border-zinc-700 transition-colors"
+            className="rounded-xl border border-border/80 bg-card p-4 shadow-lg ring-1 ring-white/5 hover:border-zinc-700 transition-colors"
           >
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1">
-                <h3 className="font-bold text-zinc-50 mb-1">{alert.message}</h3>
-                <p className="text-sm text-zinc-400">
+                <h3 className="font-bold text-primary mb-1">{alert.message}</h3>
+                <p className="text-sm text-secondary">
                   {/* Кликабельный переход на страницу скважины */}
                   {alert.wellId ? (
                     <Link to={`/well/${alert.wellId}`} className="text-blue-400 hover:underline">
@@ -108,7 +108,7 @@ export default function AlertsPage() {
                 <button
                   onClick={() => setSelectedAlert(alert)}
                   disabled={!alert.wellId}
-                  className="rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-zinc-700 bg-card/60 px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   🔍 Расследовать
                 </button>

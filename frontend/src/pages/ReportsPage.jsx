@@ -59,16 +59,16 @@ export default function ReportsPage() {
   };
 
   const selectCls =
-    'w-full rounded-xl border border-zinc-800/80 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
+    'w-full rounded-xl border border-border/80 bg-base px-4 py-2.5 text-sm text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
     <div className="animate-fade-in-up">
-      <h1 className="text-3xl font-bold mb-6 text-zinc-50">Отчёты</h1>
+      <h1 className="text-3xl font-bold mb-6 text-primary">Отчёты</h1>
 
       {/* Форма формирования отчёта */}
-      <div className="rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg ring-1 ring-white/5">
-        <h2 className="mb-1 text-lg font-semibold text-zinc-50">Экспорт телеметрии</h2>
-        <p className="mb-6 text-sm text-zinc-400">
+      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-lg ring-1 ring-white/5">
+        <h2 className="mb-1 text-lg font-semibold text-primary">Экспорт телеметрии</h2>
+        <p className="mb-6 text-sm text-secondary">
           Выберите скважину и период, чтобы скачать отчёт в Excel или PDF
         </p>
 
@@ -78,7 +78,7 @@ export default function ReportsPage() {
               Скважина
             </label>
             {isLoading ? (
-              <div className="h-10 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+              <div className="h-10 animate-pulse rounded-xl border border-border/80 bg-card" />
             ) : (
               <select
                 value={selectedWellId}

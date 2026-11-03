@@ -18,7 +18,7 @@ export default function PeriodSelector({ value, onChange }) {
  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
             value === p.value
               ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-              : 'border border-zinc-800/80 bg-zinc-900/50 text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200'
+              : 'border border-border/80 bg-base/50 text-secondary hover:bg-card/60 hover:text-zinc-200'
           }`}
         >
           {p.label}

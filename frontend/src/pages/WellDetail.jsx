@@ -14,7 +14,7 @@ const STATUS_BADGE = {
   warning: { text: 'Внимание', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
   alarm: { text: 'Авария', cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20 animate-pulse-alert' },
   maintenance: { text: 'В ремонте', cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20 animate-pulse-alert' },
-  offline: { text: 'Офлайн', cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' },
+  offline: { text: 'Офлайн', cls: 'bg-zinc-500/10 text-secondary border-zinc-500/20' },
 };
 
 export default function WellDetail() {
@@ -111,19 +111,19 @@ export default function WellDetail() {
     return (
  <div className="animate-fade-in">
         {/* Skeleton шапки */}
- <div className="mb-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
+ <div className="mb-6 flex items-center justify-between rounded-2xl border border-border/80 bg-card p-6 shadow-lg">
  <div className="space-y-3">
- <div className="h-8 w-48 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
- <div className="h-4 w-64 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+ <div className="h-8 w-48 animate-pulse rounded-xl border border-border/80 bg-card" />
+ <div className="h-4 w-64 animate-pulse rounded-xl border border-border/80 bg-card" />
           </div>
- <div className="h-28 w-28 animate-pulse rounded-full border border-zinc-800/80 bg-[#121215]" />
+ <div className="h-28 w-28 animate-pulse rounded-full border border-border/80 bg-card" />
         </div>
         {/* Skeleton графиков */}
  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {[...Array(8)].map((_, i) => (
- <div key={i} className="rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
- <div className="mb-4 h-6 w-1/3 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
- <div className="h-[300px] animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+ <div key={i} className="rounded-2xl border border-border/80 bg-card p-6 shadow-lg">
+ <div className="mb-4 h-6 w-1/3 animate-pulse rounded-xl border border-border/80 bg-card" />
+ <div className="h-[300px] animate-pulse rounded-xl border border-border/80 bg-card" />
             </div>
           ))}
         </div>
@@ -148,7 +148,7 @@ export default function WellDetail() {
 
   if (!well) {
     return (
- <div className="mt-10 text-center text-zinc-400">
+ <div className="mt-10 text-center text-secondary">
  <p className="mb-4 text-xl">Скважина не найдена</p>
  <button type="button" onClick={() => navigate('/')} className="text-blue-400 underline-offset-4 hover:underline">
           ← Назад к списку
@@ -307,12 +307,12 @@ export default function WellDetail() {
 
       {/* Шапка страницы */}
       <div className="mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-border/80 bg-card p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-zinc-50">
+            <h1 className="text-4xl font-bold tracking-tight text-primary">
               Скважина №{well.number}
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-secondary">
               {well.cdng} · {well.pump_type_display || well.pump_type} · Введена {well.commission_date}
             </p>
             <span className={`mt-3 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -320,7 +320,7 @@ export default function WellDetail() {
               well.status === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
               well.status === 'alarm' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse-alert' :
               well.status === 'maintenance' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20 animate-pulse-alert' :
-              'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
+              'bg-zinc-500/10 text-secondary border border-zinc-500/20'
             }`}>
               {badge.text}
             </span>
@@ -341,7 +341,7 @@ export default function WellDetail() {
             {healthIndex !== null && <HealthGauge value={healthIndex} size={120} />}
             {/* Переключатель режима обучения */}
             <label className="flex cursor-pointer select-none items-center gap-3">
-              <span className="text-sm text-zinc-400">Режим обучения</span>
+              <span className="text-sm text-secondary">Режим обучения</span>
               <button
                 type="button"
                 role="switch"
@@ -370,7 +370,7 @@ export default function WellDetail() {
       {/* Предиктивные алерты */}
       {predictions.length > 0 && (
  <div className="mb-6">
- <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-zinc-50"><span className="text-blue-400">◆</span> Предиктивные алерты</h2>
+ <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-primary"><span className="text-blue-400">◆</span> Предиктивные алерты</h2>
           {predictions.map((pred, idx) => (
             <PredictiveAlert key={idx} prediction={pred} />
           ))}
@@ -396,19 +396,19 @@ export default function WellDetail() {
 
       {/* Активные алерты */}
  <section className="mb-8">
- <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Активные алерты</h2>
+ <h2 className="mb-4 text-xl font-semibold tracking-tight text-primary">Активные алерты</h2>
         {/* Клик по «Расследовать» в списке алертов открывает модалку с данными этого алерта */}
         <AlertList alerts={alerts} onInvestigate={(alert) => setSelectedAlert(alert)} />
       </section>
 
       {/* Действия */}
  <section className="mb-8">
- <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Действия</h2>
+ <h2 className="mb-4 text-xl font-semibold tracking-tight text-primary">Действия</h2>
  <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={handleExportTelemetry}
- className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-50"
+ className="rounded-lg border border-border bg-base px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-card hover:text-primary"
           >
             Экспорт в Excel
           </button>
@@ -422,7 +422,7 @@ export default function WellDetail() {
           <button
             type="button"
             onClick={handleExportShiftReport}
- className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-50"
+ className="rounded-lg border border-border bg-base px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-card hover:text-primary"
           >
             Сменный отчёт Excel
           </button>

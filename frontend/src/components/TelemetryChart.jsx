@@ -25,7 +25,7 @@ function CustomTooltip({ active, payload }) {
       className="border px-3 py-2 shadow-xl"
     >
       <p className="text-sm font-semibold">{Number(p.value).toFixed(2)}</p>
-      <p className="text-xs text-zinc-400">{new Date(p.timestamp).toLocaleString('ru-RU')}</p>
+      <p className="text-xs text-secondary">{new Date(p.timestamp).toLocaleString('ru-RU')}</p>
     </div>
   );
 }
@@ -48,7 +48,7 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
   const current = data && data.length ? data[data.length - 1].value : null;
 
   return (
-    <div className="animate-fade-in-up relative rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg ring-1 ring-white/5 backdrop-blur-md transition-all duration-300 hover:border-zinc-700 hover:shadow-2xl hover:ring-white/10">
+    <div className="animate-fade-in-up relative rounded-2xl border border-border/80 bg-card p-6 shadow-lg ring-1 ring-white/5 backdrop-blur-md transition-all duration-300 hover:border-zinc-700 hover:shadow-2xl hover:ring-white/10">
       {/* Заголовок */}
       <div className="mb-1 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -59,11 +59,11 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
             {icon}
           </span>
           <div>
-            <h3 className="text-sm font-semibold tracking-tight text-zinc-50">{title}</h3>
+            <h3 className="text-sm font-semibold tracking-tight text-primary">{title}</h3>
             {current !== null && (
               <p className="mt-0.5 text-2xl font-semibold tracking-tight" style={{ color }}>
                 {Number(current).toFixed(1)}{' '}
-                <span className="text-sm font-normal text-zinc-400">{unit}</span>
+                <span className="text-sm font-normal text-secondary">{unit}</span>
               </p>
             )}
           </div>
@@ -93,11 +93,11 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
           ref={tipRef}
           className="absolute right-3 top-16 z-50 w-72 rounded-xl border border-blue-500/20 bg-[#18181b]/95 p-4 shadow-2xl ring-1 ring-white/5 backdrop-blur-md"
         >
-          <p className="mb-2 text-sm font-semibold text-zinc-50">{trainingTip.title}</p>
+          <p className="mb-2 text-sm font-semibold text-primary">{trainingTip.title}</p>
           <p className="mb-2 text-xs text-zinc-300">
             <span className="font-semibold text-emerald-400">Норма:</span> {trainingTip.normal_range}
           </p>
-          <p className="mb-2 text-xs text-zinc-400">{trainingTip.description}</p>
+          <p className="mb-2 text-xs text-secondary">{trainingTip.description}</p>
           <p className="mb-2 text-xs font-medium text-rose-400">
             <span className="font-bold">Признаки опасности:</span> {trainingTip.danger_signs}
           </p>

@@ -2,21 +2,21 @@ import React, { createContext, useState, useEffect } from 'react';
 
 export const ThemeContext = createContext();
 
-// Валидные значения кастомизации (ТЗ: 3 тёмные темы + 3 шрифта)
-const VALID_THEMES = ['zinc', 'slate', 'emerald'];
-const VALID_FONTS = ['inter', 'manrope', 'mono'];
+// Валидные значения кастомизации (ТЗ: 3 тёмные темы + 3 реально разных шрифта)
+const VALID_THEMES = ['zinc', 'navy', 'forest'];
+const VALID_FONTS = ['sans', 'serif', 'mono'];
 
 export const ThemeProvider = ({ children }) => {
-  // Цветовая тема: читаем из localStorage; старые значения ('dark'/'light') мигрируем в 'zinc'
+  // Цветовая тема: читаем из localStorage; старые/невалидные значения мигрируем в 'zinc'
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('theme');
     return VALID_THEMES.includes(saved) ? saved : 'zinc';
   });
 
-  // Шрифт интерфейса
+  // Шрифт интерфейса: sans (Inter), serif (Lora), mono (JetBrains Mono)
   const [font, setFont] = useState(() => {
     const saved = localStorage.getItem('ui-font');
-    return VALID_FONTS.includes(saved) ? saved : 'inter';
+    return VALID_FONTS.includes(saved) ? saved : 'sans';
   });
 
   // Применяем тему через data-theme на <html> — CSS-переменные подхватятся автоматически
@@ -25,9 +25,10 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Применяем шрифт классом на body (fallback-шрифты описаны в index.css)
+  // Применяем шрифт классом font-${font} на body (fallback-шрифты описаны в index.css)
   useEffect(() => {
-    document.body.className = `font-${font}`;
+    document.body.className = '';
+    document.body.classList.add(`font-${font}`);
     localStorage.setItem('ui-font', font);
   }, [font]);
 
