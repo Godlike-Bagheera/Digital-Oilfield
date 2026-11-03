@@ -6,16 +6,23 @@ from wells.models import Well, TrainingTip
 
 
 class Command(BaseCommand):
-    help = 'Создаёт тестовые данные: 10 скважин (ЦДНГ-1) и 5 обучающих подсказок'
+    help = 'Создаёт тестовые данные: 10 скважин (ЦДНГ-1/2/3) и 5 обучающих подсказок'
 
     def handle(self, *args, **options):
         pump_types = ['srp', 'esp', 'progressive']
         created_wells = 0
         for i, num in enumerate(range(101, 111)):
+            # Распределение скважин по ЦДНГ: 101-104 -> ЦДНГ-1, 105-107 -> ЦДНГ-2, 108-110 -> ЦДНГ-3
+            if num <= 104:
+                cdng = 'ЦДНГ-1'
+            elif num <= 107:
+                cdng = 'ЦДНГ-2'
+            else:
+                cdng = 'ЦДНГ-3'
             well, created = Well.objects.get_or_create(
                 number=str(num),
                 defaults={
-                    'cdng': 'ЦДНГ-1',
+                    'cdng': cdng,
                     'well_type': 'producing',
                     'pump_type': pump_types[i % len(pump_types)],
                     'status': 'online',

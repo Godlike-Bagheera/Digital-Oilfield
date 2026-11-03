@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+// Пункт «Скважины» убран — дублировал Дашборд (список скважин виден на главной)
 const NAV_ITEMS = [
   { to: '/', label: 'Дашборд', icon: '▦' },
-  { to: '/wells', label: 'Скважины', icon: '◈' },
   { to: '/alerts', label: 'Алерты', icon: '▲' },
   { to: '/reports', label: 'Отчеты', icon: '▤' },
 ];
@@ -58,6 +58,19 @@ export default function Layout({ children }) {
             </Link>
           ))}
         </nav>
+
+        {/* Ссылка на Django-админку — над блоком статуса системы */}
+        <div className="px-4 pb-2">
+          <a
+            href="http://localhost:8000/admin/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-200"
+          >
+            <span className="text-base leading-none text-zinc-500">⚙</span>
+            Админ-панель
+          </a>
+        </div>
 
         {/* Нижний блок статуса */}
         <div className="border-t border-zinc-800 px-6 py-5">

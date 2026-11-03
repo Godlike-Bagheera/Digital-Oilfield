@@ -113,17 +113,17 @@ export default function WellDetail() {
         {/* Skeleton шапки */}
  <div className="mb-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
  <div className="space-y-3">
- <div className="h-8 w-48 animate-pulse rounded-xl bg-zinc-800" />
- <div className="h-4 w-64 animate-pulse rounded-xl bg-zinc-800" />
+ <div className="h-8 w-48 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+ <div className="h-4 w-64 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
           </div>
- <div className="h-28 w-28 animate-pulse rounded-full bg-zinc-800" />
+ <div className="h-28 w-28 animate-pulse rounded-full border border-zinc-800/80 bg-[#121215]" />
         </div>
         {/* Skeleton графиков */}
  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {[...Array(8)].map((_, i) => (
  <div key={i} className="rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
- <div className="mb-4 h-6 w-1/3 animate-pulse rounded-xl bg-zinc-800" />
- <div className="h-[300px] animate-pulse rounded-xl bg-zinc-800" />
+ <div className="mb-4 h-6 w-1/3 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+ <div className="h-[300px] animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
             </div>
           ))}
         </div>

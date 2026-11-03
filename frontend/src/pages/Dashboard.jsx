@@ -75,15 +75,15 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-8">
-        <div className="h-8 w-1/3 animate-pulse rounded-xl bg-zinc-800" />
+        <div className="h-8 w-1/3 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl bg-zinc-800" />
+            <div key={i} className="h-28 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
           ))}
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-64 animate-pulse rounded-xl bg-zinc-800" />
+            <div key={i} className="h-64 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
           ))}
         </div>
       </div>
