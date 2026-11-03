@@ -52,6 +52,18 @@ class Well(models.Model):
     def __str__(self):
         return f"Скважина №{self.number} ({self.cdng})"
 
+    @property
+    def latest_telemetry(self):
+        """Последняя запись телеметрии (ORDER BY -timestamp LIMIT 1 — один запрос).
+
+        related_name у TelemetryData.well = 'telemetry'. Ordering модели уже
+        ['-timestamp'], но order_by явно для надёжности.
+        """
+        try:
+            return self.telemetry.order_by('-timestamp').first()
+        except Exception:
+            return None
+
     class Meta:
         verbose_name = "Скважина"
         verbose_name_plural = "Скважины"

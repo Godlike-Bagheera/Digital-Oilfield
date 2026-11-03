@@ -124,6 +124,30 @@ class Command(BaseCommand):
 
             last = TelemetryData.objects.filter(well=well).order_by('-timestamp').first()
 
+            # ФИКС (после ремонта): если последняя телеметрия ЭТАЛОННАЯ
+            # (health_index == 100 — создана эндпоинтом /repair/), симулятор
+            # отталкивается от идеальных значений, а НЕ от "памяти" об аварии.
+            # Генерируем нормальные значения прямо в идеальных диапазонах.
+            if last is not None and last.health_index >= 100:
+                data = {
+                    'current': round(45 + random.uniform(-2, 2), 2),
+                    'casing_pressure': round(6.5 + random.uniform(-0.5, 0.5), 2),
+                    'discharge_pressure': round(12.0 + random.uniform(-1, 1), 2),
+                    'temperature': round(50 + random.uniform(-3, 3), 2),
+                    'flow_rate_liquid': round(80 + random.uniform(-5, 5), 2),
+                    'flow_rate_oil': round(30 + random.uniform(-2, 2), 2),
+                    'water_cut': round(45 + random.uniform(-3, 3), 2),
+                    'stroke_rate': round(7 + random.uniform(-0.5, 0.5), 2),
+                }
+                health = calculate_health_index(data)
+                record = TelemetryData.objects.create(
+                    well=well, health_index=health['health_index'], **data)
+                check_and_create_alerts(well, data)
+                self.stdout.write(
+                    f'Скважина №{well.number}: HI={health["health_index"]} '
+                    f'(пост-ремонтный режим, база = эталонная телеметрия)')
+                continue
+
             data = {}
             for param, cfg in BASE_VALUES.items():
                 prev = getattr(last, param, None) if last else None

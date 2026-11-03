@@ -12,38 +12,73 @@ from wells.models import Well, TelemetryData, Alert
 import os
 import io
 
-# --- FIX: поддержка кириллицы в PDF ---
+# --- FIX: поддержка кириллицы в PDF (кроссплатформенно) ---
 # ReportLab по умолчанию использует Helvetica (Windows-1252), из-за чего
-# русские текст в таблицах отображается чёрными квадратами/кракозябрами.
-# Регистрируем DejaVu Sans с кириллицей и делаем его шрифтом по умолчанию.
+# русский текст в таблицах отображается чёрными квадратами/кракозябрами.
+# Ищем TTF-шрифт с кириллицей на Windows / Linux / Mac.
+# ВАЖНО: Helvetica НЕ поддерживается как основной шрифт — только последний
+# fallback с явным предупреждением.
 _FONT_CANDIDATES = [
-    ('DejaVuSans', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'),
-    ('DejaVuSans-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'),
+    # Windows (есть на ~100% машин)
+    r'C:\Windows\Fonts\arial.ttf',
+    r'C:\Windows\Fonts\calibri.ttf',
+    r'C:\Windows\Fonts\times.ttf',
+    r'C:\Windows\Fonts\segoeui.ttf',
+    # Linux
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+    '/usr/share/fonts/liberation-sans/LiberationSans-Regular.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+    '/usr/share/fonts/truetype/freefont/FreeSans.ttf',
+    # Mac
+    '/System/Library/Fonts/Supplemental/Arial.ttf',
+    '/Library/Fonts/Arial.ttf',
 ]
+
+_FONT_BOLD_CANDIDATES = [
+    r'C:\Windows\Fonts\arialbd.ttf',
+    r'C:\Windows\Fonts\calibrib.ttf',
+    r'C:\Windows\Fonts\timesbd.ttf',
+    r'C:\Windows\Fonts\segoeuib.ttf',
+    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+    '/usr/share/fonts/liberation-sans/LiberationSans-Bold.ttf',
+    '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+    '/usr/share/fonts/truetype/freefont/FreeSansBold.ttf',
+    '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+    '/Library/Fonts/Arial Bold.ttf',
+]
+
+
+def _try_register(name, candidates):
+    for path in candidates:
+        if os.path.exists(path):
+            try:
+                pdfmetrics.registerFont(TTFont(name, path))
+                print(f"PDF font registered: {name} <- {path}")
+                return name
+            except Exception as e:
+                print(f"Failed to register {path}: {e}")
+                continue
+    return None
 
 
 def _register_cyrillic_fonts():
     """Регистрирует шрифты с поддержкой кириллицы. Возвращает (regular, bold)."""
-    regular, bold = 'Helvetica', 'Helvetica-Bold'
-    for name, path in _FONT_CANDIDATES:
-        if os.path.exists(path):
-            try:
-                pdfmetrics.registerFont(TTFont(name, path))
-                if name == 'DejaVuSans':
-                    regular = name
-                else:
-                    bold = name
-            except Exception:
-                pass
-    if regular != 'Helvetica' and bold != 'Helvetica':
+    regular = _try_register('CyrillicFont', _FONT_CANDIDATES)
+    bold = _try_register('CyrillicFont-Bold', _FONT_BOLD_CANDIDATES)
+    if regular and bold:
         try:
             pdfmetrics.registerFontFamily(
-                'DejaVuSans', normal='DejaVuSans', bold='DejaVuSans-Bold',
-                italic='DejaVuSans', boldItalic='DejaVuSans-Bold',
+                'CyrillicFont', normal='CyrillicFont', bold='CyrillicFont-Bold',
+                italic='CyrillicFont', boldItalic='CyrillicFont-Bold',
             )
         except Exception:
             pass
-    return regular, bold
+        return regular, bold
+    if regular:  # bold не найден — используем regular везде
+        return regular, regular
+    # Fallback — Helvetica (кириллица НЕ будет работать!)
+    print("WARNING: No Cyrillic font found, using Helvetica (Cyrillic will be broken)")
+    return 'Helvetica', 'Helvetica-Bold'
 
 
 FONT_REGULAR, FONT_BOLD = _register_cyrillic_fonts()

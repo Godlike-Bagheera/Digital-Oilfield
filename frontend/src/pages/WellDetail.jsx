@@ -92,14 +92,22 @@ export default function WellDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Автообновление данных каждые 3 секунды (зависит от id И period)
+  // Автообновление данных каждые 5 секунд (зависит от id И period).
+  // ВАЖНО: вызывает fetchWell — чтобы health_index и статус скважины
+  // обновлялись с сервера без F5 (фикс рассинхронизации состояния).
   useEffect(() => {
     if (!id) return;
-    const interval = setInterval(() => {
-      fetchTelemetry(id, period);
-      fetchAlerts(id);
-      console.log('🔄 Обновлено:', new Date().toLocaleTimeString());
-    }, 3000);
+    const interval = setInterval(async () => {
+      try {
+        const data = await api.getWell(id);
+        setWell(data);
+      } catch (e) {
+        console.error('Ошибка автообновления скважины:', e);
+      }
+      await fetchTelemetry(id, period);
+      await fetchAlerts(id);
+      console.log('Обновлено:', new Date().toLocaleTimeString());
+    }, 5000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, period]);
@@ -164,27 +172,36 @@ export default function WellDetail() {
   const latest = well.latest_telemetry;
   const healthIndex = latest ? latest.health_index : null;
 
-  // Завершение ремонта: вызывает POST /api/wells/{id}/repair/ и обновляет
-  // состояние БЕЗ перезагрузки страницы (window.location.reload не используем)
+  // Завершение ремонта: вызывает POST /api/wells/{id}/repair/ и подтягивает
+  // СВЕЖИЕ данные с сервера (без перезагрузки страницы и без локального setWell)
   const handleRepair = async () => {
     if (!window.confirm(`Завершить ремонт скважины №${well.number}?`)) return;
+
     try {
       const response = await fetch(`/api/wells/${well.id}/repair/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!response.ok) throw new Error('Repair failed');
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}`);
+      }
+
       const data = await response.json();
 
-      // Обновляем статус скважины локально — без перезагрузки страницы
-      setWell({ ...well, status: 'online' });
-
-      // Перезагружаем алерты, чтобы увидеть закрытые
+      // ВАЖНО: подтягиваем СВЕЖИЕ данные с сервера вместо локального setWell
+      await fetchWell(well.id);
+      await fetchTelemetry(well.id, period);
       await fetchAlerts(well.id);
 
-      alert(data.message || 'Скважина перезапущена');
+      // Очищаем предиктивные алерты до следующего обновления телеметрии
+      setPredictions([]);
+
+      alert(data.message || 'Скважина перезапущена после ремонта');
     } catch (err) {
-      alert('Ошибка: ' + err.message);
+      console.error('Repair error:', err);
+      alert('Ошибка ремонта: ' + err.message);
     }
   };
 

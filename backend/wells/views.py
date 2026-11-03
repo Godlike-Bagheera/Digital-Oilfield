@@ -96,11 +96,17 @@ class WellViewSet(ModelViewSet):
     def repair(self, request, pk=None):
         """
         Завершить ремонт скважины (ручной перезапуск оператором).
-        Переводит скважину из статуса alarm/maintenance в online
-        и закрывает все активные алерты этой скважины.
-        КРИТИЧЕСКИЙ БИЗНЕС-БАГ (исправлен): раньше скважина "чинилась" сама —
-        теперь только через этот эндпоинт или action в админке.
+        1. Меняет статус на online
+        2. Закрывает все активные алерты
+        3. Создаёт "эталонную" запись телеметрии с идеальными параметрами,
+           чтобы health_index мгновенно стал ~100% и симулятор отталкивался
+           от нормальных значений, а не от "памяти" об аварии.
+        4. Возвращает обновлённую скважину через WellDetailSerializer.
         """
+        from wells.models import TelemetryData
+        from wells.serializers import WellDetailSerializer
+        from wells.services.health_calculator import calculate_health_index
+
         well = self.get_object()
 
         # 1. Меняем статус на online
@@ -113,14 +119,48 @@ class WellViewSet(ModelViewSet):
             is_active=True,
         ).update(is_active=False, resolved_at=timezone.now())
 
+        # 3. Эталонная телеметрия: параметры в идеальных диапазонах
+        # health_calculator.PARAMETER_CONFIG:
+        #   current ideal (40,50), casing ideal (5,8), temperature ideal (40,60),
+        #   flow_rate_oil ideal >=20, water_cut ideal <=50, stroke_rate ideal (6,8)
+        perfect_data = {
+            'current': 45.0,
+            'casing_pressure': 6.5,
+            'discharge_pressure': 12.0,
+            'temperature': 50.0,
+            'flow_rate_liquid': 80.0,
+            'flow_rate_oil': 30.0,
+            'water_cut': 45.0,
+            'stroke_rate': 7.0,
+        }
+
+        health_result = calculate_health_index(perfect_data)
+        health_index = (health_result.get('health_index', 100)
+                        if isinstance(health_result, dict) else 100)
+
+        ideal_telemetry = TelemetryData.objects.create(
+            well=well,
+            health_index=health_index,
+            **perfect_data,
+        )
+
+        # 4. Свежие данные скважины + новая телеметрия в ответе
+        well.refresh_from_db()
+        serializer = WellDetailSerializer(well)
+
         return Response({
             'status': 'success',
-            'message': f'Скважина №{well.number} перезапущена после ремонта',
+            'message': (f'Скважина №{well.number} перезапущена после ремонта. '
+                        f'Параметры сброшены к идеальным значениям.'),
             'closed_alerts': closed_count,
+            'well': serializer.data,
+            'new_telemetry_id': ideal_telemetry.id,
+            'new_health_index': health_index,
             'new_status': well.status,
         })
 
-    @action(detail=False, methods=['post'], url_path='export/telemetry', permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], url_path='export/telemetry',
+          permission_classes=[AllowAny], authentication_classes=[])
     def export_telemetry(self, request):
         """Экспорт телеметрии в Excel"""
         from wells.services.excel_export import export_telemetry_to_excel
@@ -142,7 +182,8 @@ class WellViewSet(ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'], url_path='export/shift-report', permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], url_path='export/shift-report',
+          permission_classes=[AllowAny], authentication_classes=[])
     def export_shift_report(self, request):
         """Экспорт сменного отчёта"""
         from wells.services.excel_export import export_shift_report_to_excel
@@ -164,7 +205,8 @@ class WellViewSet(ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'], url_path='export/telemetry-pdf', permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], url_path='export/telemetry-pdf',
+          permission_classes=[AllowAny], authentication_classes=[])
     def export_telemetry_pdf(self, request):
         """Экспорт телеметрии в PDF"""
         from wells.services.pdf_export import create_telemetry_pdf
@@ -187,7 +229,8 @@ class WellViewSet(ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'], url_path='export/shift-report-pdf', permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], url_path='export/shift-report-pdf',
+          permission_classes=[AllowAny], authentication_classes=[])
     def export_shift_report_pdf(self, request):
         """Экспорт сменного отчёта в PDF"""
         from wells.services.pdf_export import create_shift_report_pdf
