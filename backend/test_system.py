@@ -15,9 +15,36 @@ import subprocess
 from datetime import datetime, timedelta
 
 # --- Инициализация Django вне manage.py ---
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
-import django  # noqa: E402
+# Активируем venv если есть (чтобы тесты работали без ручной активации)
+_venv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'venv')
+if os.path.exists(_venv_path):
+    _activate_script = (
+        os.path.join(_venv_path, 'Scripts', 'activate_this.py')
+        if sys.platform == 'win32'
+        else os.path.join(_venv_path, 'bin', 'activate_this.py')
+    )
+    if os.path.exists(_activate_script):
+        exec(open(_activate_script).read(), {'__file__': _activate_script})
+
+try:
+    import django  # noqa: E402,F401
+except ModuleNotFoundError:
+    # Python не из venv — перезапускаем себя с интерпретатором из venv
+    _venv_python = (
+        os.path.join(_venv_path, 'Scripts', 'python.exe')
+        if sys.platform == 'win32'
+        else os.path.join(_venv_path, 'bin', 'python')
+    )
+    if os.path.exists(_venv_python):
+        print(f"[test_system] Django не найден в текущем Python. Перезапуск через venv: {_venv_python}")
+        os.execv(_venv_python, [_venv_python] + sys.argv)
+    print("ОШИБКА: Django не установлен и venv не найден по пути", _venv_path)
+    print("Установите зависимости: cd backend && pip install -r requirements.txt")
+    sys.exit(1)
+
 django.setup()
 
 try:

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { Moon, Sun, Clock, GraduationCap } from 'lucide-react';
 import { ThemeContext } from '../contexts/ThemeContext.jsx';
 
 export default function Header() {
@@ -32,7 +31,7 @@ export default function Header() {
         {/* Время + переключатель темы */}
         <div className="flex items-center gap-4">
           <span className="hidden items-center gap-1.5 font-mono text-sm tabular-nums text-gray-600 dark:text-gray-300 sm:flex">
-            <Clock size={14} className="opacity-60" />
+            <span className="opacity-60">🕐</span>
             {timeString}
           </span>
           <button
@@ -41,7 +40,7 @@ export default function Header() {
             aria-label="Переключить тему"
             className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 text-gray-700 transition-all hover:scale-110 hover:border-blue-500 hover:text-blue-500 dark:border-gray-600 dark:text-gray-200 dark:hover:border-blue-400 dark:hover:text-blue-400"
           >
-            {dark ? <Moon size={16} /> : <Sun size={16} />}
+            {dark ? '☀️' : '🌙'}
           </button>
         </div>
       </div>
