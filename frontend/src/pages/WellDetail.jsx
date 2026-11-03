@@ -30,8 +30,8 @@ export default function WellDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [predictions, setPredictions] = useState([]);
-  const [investigationOpen, setInvestigationOpen] = useState(false);
-  const [selectedAlertId, setSelectedAlertId] = useState(null);
+  // Выбранный алерт для модалки расследования (null — модалка закрыта)
+  const [selectedAlert, setSelectedAlert] = useState(null);
 
   const fetchTelemetry = useCallback(async (wellId, prd) => {
     try {
@@ -397,7 +397,8 @@ export default function WellDetail() {
       {/* Активные алерты */}
  <section className="mb-8">
  <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Активные алерты</h2>
-        <AlertList alerts={alerts} />
+        {/* Клик по «Расследовать» в списке алертов открывает модалку с данными этого алерта */}
+        <AlertList alerts={alerts} onInvestigate={(alert) => setSelectedAlert(alert)} />
       </section>
 
       {/* Действия */}
@@ -432,24 +433,16 @@ export default function WellDetail() {
           >
             Сменный отчёт PDF
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedAlertId(alerts.length > 0 ? alerts[0].id : null);
-              setInvestigationOpen(true);
-            }}
- className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
-          >
-            Расследовать инцидент
-          </button>
+          
         </div>
       </section>
 
+      {/* Модалка расследования — открывается кнопкой «Расследовать» в AlertList */}
       <InvestigationModal
-        isOpen={investigationOpen}
-        onClose={() => setInvestigationOpen(false)}
-        wellId={well?.id}
-        alertId={selectedAlertId}
+        isOpen={!!selectedAlert}
+        onClose={() => setSelectedAlert(null)}
+        wellId={selectedAlert?.well?.id || selectedAlert?.well || well?.id}
+        alertId={selectedAlert?.id}
       />
     </div>
   );

@@ -1,7 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+/* ===== Хелперы тёмной темы: фон/карточки подхватывают CSS-переменные активной темы ===== */
+.bg-base { background-color: var(--bg-base); }
+.bg-cardx { background-color: var(--bg-card); }
+.text-mainx { color: var(--text-main); }
+.text-mutedx { color: var(--text-muted); }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== Система тем (CSS-переменные, применяются через data-theme на <html>) ===== */
+:root {
+  --bg-base: #09090b;
+  --bg-card: #121215;
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --chart-grid: rgba(250, 250, 249, 0.08);
+}
+
+[data-theme="slate"] {
+  --bg-base: #0f172a;
+  --bg-card: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1;
+  --chart-grid: rgba(248, 250, 252, 0.10);
+}
+
+[data-theme="emerald"] {
+  --bg-base: #022c22;
+  --bg-card: #064e3b;
+  --text-main: #ecfdf5;
+  --text-muted: #a7f3d0;
+  --chart-grid: rgba(236, 253, 245, 0.10);
+}
+
+/* Фон и карточки подхватывают переменныe активной темы через хелперы .bg-base/.bg-cardx (см. начало файла) */
+
+/* ===== Шрифты с fallback ===== */
+.font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+.font-manrope { font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; }
+.font-mono-ui { font-family: 'JetBrains Mono', 'Courier New', monospace; }
+/* ВНИМАНИЕ: Tailwind уже резервирует .font-mono — для кастомизации используем font-${font},
+   где mono соответствует утилите font-mono (ui-monospace). Определим явно: */
+body.font-mono { font-family: 'JetBrains Mono', 'Courier New', monospace; }
 
 * {
   margin: 0;

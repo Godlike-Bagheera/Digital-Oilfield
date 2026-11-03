@@ -14,7 +14,8 @@ const TYPE_META = {
   predictive: { bar: '#3b82f6', icon: '●', label: 'Предиктивный' },
 };
 
-export default function AlertList({ alerts }) {
+// onInvestigate — колбэк открытия модалки расследования (передаётся из WellDetail)
+export default function AlertList({ alerts, onInvestigate }) {
   if (!alerts || alerts.length === 0) {
     return (
  <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
@@ -45,7 +46,8 @@ export default function AlertList({ alerts }) {
               </p>
               <button
                 type="button"
-                onClick={() => console.log('Расследование алерта:', alert)}
+                // Кнопка «Расследовать» открывает модалку через колбэк родителя
+                onClick={() => onInvestigate && onInvestigate(alert)}
  className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
               >
                 Расследовать

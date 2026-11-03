@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { ThemeContext } from '../contexts/ThemeContext';
 
 // Пункт «Скважины» убран — дублировал Дашборд (список скважин виден на главной)
 const NAV_ITEMS = [
@@ -11,6 +12,9 @@ const NAV_ITEMS = [
 export default function Layout({ children }) {
   const location = useLocation();
   const [time, setTime] = useState(new Date());
+  // Кастомизация интерфейса: тема и шрифт из глобального контекста
+  const { theme, setTheme, font, setFont } = useContext(ThemeContext);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -23,9 +27,9 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#09090b] text-zinc-50">
+    <div className="bg-base flex min-h-screen text-mainx">
       {/* Левая панель (Sidebar) */}
-      <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-zinc-800 bg-[#09090b]">
+      <aside className="bg-base fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-zinc-800">
         {/* Логотип — ЕДИНСТВЕННОЕ место названия продукта */}
         <div className="flex items-center gap-3 px-6 py-6">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/60 shadow-lg ring-1 ring-white/5">
@@ -72,7 +76,61 @@ export default function Layout({ children }) {
           </a>
         </div>
 
-        {/* Нижний блок статуса */}
+        {/* Панель настроек UI: 3 тёмные темы + 3 шрифта, сохраняются в localStorage */}
+      <div className="px-4 pb-2">
+        <button
+          onClick={() => setSettingsOpen(!settingsOpen)}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-200"
+        >
+          <span className="text-base">🎨</span>
+          Настройки UI
+        </button>
+
+        {settingsOpen && (
+          <div className="mt-2 rounded-lg border border-zinc-800 bg-zinc-900 p-3">
+            <p className="mb-2 text-xs text-zinc-500">Цветовая тема</p>
+            <div className="mb-3 flex gap-2">
+              {[
+                { id: 'zinc', color: 'bg-zinc-800', name: 'Цинк' },
+                { id: 'slate', color: 'bg-slate-700', name: 'Синяя' },
+                { id: 'emerald', color: 'bg-emerald-800', name: 'Зелёная' }
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id)}
+                  className={`h-8 w-8 rounded-full border-2 transition-all ${t.color} ${
+                    theme === t.id ? 'border-blue-400' : 'border-zinc-700'
+                  }`}
+                  title={t.name}
+                />
+              ))}
+            </div>
+
+            <p className="mb-2 text-xs text-zinc-500">Шрифт</p>
+            <div className="flex gap-1">
+              {[
+                { id: 'inter', label: 'Inter' },
+                { id: 'manrope', label: 'Manrope' },
+                { id: 'mono', label: 'Mono' }
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setFont(f.id)}
+                  className={`flex-1 rounded border px-2 py-1.5 text-xs transition-colors ${
+                    font === f.id
+                      ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
+                      : 'border-zinc-700 bg-zinc-800 text-zinc-400'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Нижний блок статуса */}
         <div className="border-t border-zinc-800 px-6 py-5">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
