@@ -13,6 +13,7 @@ const STATUS_BADGE = {
   online: { text: 'Онлайн', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
   warning: { text: 'Внимание', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
   alarm: { text: 'Авария', cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20 animate-pulse-alert' },
+  maintenance: { text: 'В ремонте', cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20 animate-pulse-alert' },
   offline: { text: 'Офлайн', cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' },
 };
 
@@ -160,6 +161,30 @@ export default function WellDetail() {
   const latest = well.latest_telemetry;
   const healthIndex = latest ? latest.health_index : null;
 
+  // Завершение ремонта: вызывает POST /api/wells/{id}/repair/ и обновляет
+  // состояние БЕЗ перезагрузки страницы (window.location.reload не используем)
+  const handleRepair = async () => {
+    if (!window.confirm(`Завершить ремонт скважины №${well.number}?`)) return;
+    try {
+      const response = await fetch(`/api/wells/${well.id}/repair/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Repair failed');
+      const data = await response.json();
+
+      // Обновляем статус скважины локально — без перезагрузки страницы
+      setWell({ ...well, status: 'online' });
+
+      // Перезагружаем алерты, чтобы увидеть закрытые
+      await fetchAlerts(well.id);
+
+      alert(data.message || 'Скважина перезапущена');
+    } catch (err) {
+      alert('Ошибка: ' + err.message);
+    }
+  };
+
   const chartData = (key) => telemetry.map((t) => ({ timestamp: t.timestamp, value: t[key] }));
 
   // Экспорт телеметрии скважины в Excel
@@ -294,10 +319,22 @@ export default function WellDetail() {
               well.status === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
               well.status === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
               well.status === 'alarm' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse-alert' :
+              well.status === 'maintenance' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20 animate-pulse-alert' :
               'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
             }`}>
               {badge.text}
             </span>
+            {/* Кнопка ремонта: видна только если скважина в аварии или на ремонте */}
+            {(well.status === 'alarm' || well.status === 'maintenance') && (
+              <div>
+                <button
+                  onClick={handleRepair}
+                  className="mt-4 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 transition-all"
+                >
+                  🔧 Завершить ремонт и перезапустить скважину
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-6">
