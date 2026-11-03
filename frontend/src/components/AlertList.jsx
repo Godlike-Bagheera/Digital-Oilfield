@@ -32,14 +32,14 @@ export default function AlertList({ alerts, onInvestigate }) {
         return (
           <div
             key={alert.id}
- className="flex overflow-hidden rounded-xl border border-border/80 bg-card shadow-lg ring-1 ring-white/5 transition-colors hover:border-zinc-700"
+ className="flex overflow-hidden rounded-xl border border-zinc-800/80 bg-[#121215] shadow-lg ring-1 ring-white/5 transition-colors hover:border-zinc-700"
           >
  <div className="w-1.5 shrink-0" style={{ backgroundColor: meta.bar }} />
  <div className="flex-1 p-4">
- <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-primary">
+ <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-zinc-50">
                 <span style={{ color: meta.bar }}>{meta.icon}</span> {alert.message}
               </p>
- <p className="mb-2 text-xs text-secondary">
+ <p className="mb-2 text-xs text-zinc-400">
  Параметр: <span className="font-medium text-zinc-300">{alert.parameter}</span> ·
  Значение: <span className="font-medium text-zinc-300">{alert.value}</span> (порог {alert.threshold}) ·
  Сработал: <span className="font-medium text-zinc-300">{getTimeAgo(alert.created_at)}</span>

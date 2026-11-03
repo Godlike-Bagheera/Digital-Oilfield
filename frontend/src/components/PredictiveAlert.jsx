@@ -36,7 +36,7 @@ const PredictiveAlert = ({ prediction }) => {
  <div className="flex items-center justify-between mb-2">
  <div className="flex items-center gap-2">
  <span className="text-lg text-blue-400">◆</span>
- <h3 className="text-base font-semibold tracking-tight text-primary">Прогноз аварии</h3>
+ <h3 className="text-base font-semibold tracking-tight text-zinc-50">Прогноз аварии</h3>
                 </div>
  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${confidenceColors[prediction.confidence]}`}>
                     Уверенность: {confidenceLabels[prediction.confidence]}

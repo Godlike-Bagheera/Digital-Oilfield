@@ -25,7 +25,7 @@ const WellCard = ({ well }) => {
 
   return (
     <Link to={`/well/${well.id}`} className="group relative block animate-fade-in-up">
-      <div className="relative h-full overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:bg-[#16161a] hover:shadow-2xl hover:ring-white/10">
+      <div className="relative h-full overflow-hidden rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:bg-[#16161a] hover:shadow-2xl hover:ring-white/10">
         {/* Фоновое свечение при наведении */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-emerald-500/0 opacity-0 transition-all duration-500 group-hover:from-blue-500/5 group-hover:to-emerald-500/5 group-hover:opacity-100"></div>
 
@@ -33,16 +33,16 @@ const WellCard = ({ well }) => {
           {/* Заголовок */}
           <div className="mb-4 flex items-start justify-between">
             <div>
-              <h3 className="text-xl font-semibold tracking-tight text-primary transition-colors group-hover:text-white">
+              <h3 className="text-xl font-semibold tracking-tight text-zinc-50 transition-colors group-hover:text-white">
                 Скважина №{well.number}
               </h3>
-              <p className="mt-0.5 text-sm text-secondary">{well.cdng}</p>
+              <p className="mt-0.5 text-sm text-zinc-400">{well.cdng}</p>
             </div>
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
               well.status === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
               well.status === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
               well.status === 'alarm' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse-alert' :
-              'bg-zinc-500/10 text-secondary border border-zinc-500/20'
+              'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
             }`}>
               {status.text}
             </span>
@@ -58,17 +58,17 @@ const WellCard = ({ well }) => {
           {/* Параметры */}
           {telemetry ? (
             <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between rounded-lg border border-border/80 bg-base/50 p-3 transition-colors hover:border-zinc-700">
-                <span className="text-xs text-secondary">Ток</span>
-                <span className="text-sm font-semibold text-primary">{telemetry.current?.toFixed(1)} А</span>
+              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-[#09090b]/50 p-3 transition-colors hover:border-zinc-700">
+                <span className="text-xs text-zinc-400">Ток</span>
+                <span className="text-sm font-semibold text-zinc-50">{telemetry.current?.toFixed(1)} А</span>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-border/80 bg-base/50 p-3 transition-colors hover:border-zinc-700">
-                <span className="text-xs text-secondary">Дебит нефти</span>
-                <span className="text-sm font-semibold text-primary">{telemetry.flow_rate_oil?.toFixed(1)} т/сут</span>
+              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-[#09090b]/50 p-3 transition-colors hover:border-zinc-700">
+                <span className="text-xs text-zinc-400">Дебит нефти</span>
+                <span className="text-sm font-semibold text-zinc-50">{telemetry.flow_rate_oil?.toFixed(1)} т/сут</span>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-border/80 bg-base/50 p-3 transition-colors hover:border-zinc-700">
-                <span className="text-xs text-secondary">Обводнённость</span>
-                <span className="text-sm font-semibold text-primary">{telemetry.water_cut?.toFixed(1)}%</span>
+              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-[#09090b]/50 p-3 transition-colors hover:border-zinc-700">
+                <span className="text-xs text-zinc-400">Обводнённость</span>
+                <span className="text-sm font-semibold text-zinc-50">{telemetry.water_cut?.toFixed(1)}%</span>
               </div>
             </div>
           ) : (
@@ -78,7 +78,7 @@ const WellCard = ({ well }) => {
           )}
 
           {/* Время обновления */}
-          <div className="mt-4 flex items-center justify-center gap-2 border-t border-border/80 pt-4 text-xs text-zinc-500">
+          <div className="mt-4 flex items-center justify-center gap-2 border-t border-zinc-800/80 pt-4 text-xs text-zinc-500">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
             Обновлено: {getTimeAgo(telemetry?.timestamp)}
           </div>

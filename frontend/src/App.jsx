@@ -1,5 +1,4 @@
 import React from 'react';
-import { ThemeProvider } from './contexts/ThemeContext';
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -10,16 +9,14 @@ import ReportsPage from './pages/ReportsPage.jsx';
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/wells" element={<WellsPage />} />
-          <Route path="/alerts" element={<AlertsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/well/:id" element={<WellDetail />} />
-        </Routes>
-      </Layout>
-    </ThemeProvider>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/wells" element={<WellsPage />} />
+        <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/well/:id" element={<WellDetail />} />
+      </Routes>
+    </Layout>
   );
 }
