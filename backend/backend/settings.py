@@ -123,7 +123,7 @@ REST_FRAMEWORK = {
 UNFOLD = {
     "SITE_TITLE": "Цифровое месторождение",
     "SITE_HEADER": "Цифровое месторождение",
-    "SITE_SYMBOL": "local_gas_station",  # ПРАВИЛЬНАЯ иконка Material Icons (oil_barrel не существует)
+    "SITE_SYMBOL": "local_gas_station",  # иконка Material Icons для Django Unfold
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": False,
     "BORDER_RADIUS": "8px",

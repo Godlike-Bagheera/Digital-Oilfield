@@ -113,7 +113,7 @@ class WellViewSet(ModelViewSet):
             'new_status': well.status,
         })
 
-    @action(detail=False, methods=['post'], url_path='export/telemetry')
+    @action(detail=False, methods=['post'], url_path='export/telemetry', permission_classes=[AllowAny])
     def export_telemetry(self, request):
         """Экспорт телеметрии в Excel"""
         from wells.services.excel_export import export_telemetry_to_excel
@@ -135,7 +135,7 @@ class WellViewSet(ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'], url_path='export/shift-report')
+    @action(detail=False, methods=['post'], url_path='export/shift-report', permission_classes=[AllowAny])
     def export_shift_report(self, request):
         """Экспорт сменного отчёта"""
         from wells.services.excel_export import export_shift_report_to_excel
@@ -157,7 +157,7 @@ class WellViewSet(ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'], url_path='export/telemetry-pdf')
+    @action(detail=False, methods=['post'], url_path='export/telemetry-pdf', permission_classes=[AllowAny])
     def export_telemetry_pdf(self, request):
         """Экспорт телеметрии в PDF"""
         from wells.services.pdf_export import create_telemetry_pdf
@@ -180,7 +180,7 @@ class WellViewSet(ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'], url_path='export/shift-report-pdf')
+    @action(detail=False, methods=['post'], url_path='export/shift-report-pdf', permission_classes=[AllowAny])
     def export_shift_report_pdf(self, request):
         """Экспорт сменного отчёта в PDF"""
         from wells.services.pdf_export import create_shift_report_pdf

@@ -3,12 +3,58 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from django.utils import timezone
 from django.conf import settings
 from datetime import timedelta
 from wells.models import Well, TelemetryData, Alert
 import os
 import io
+
+# --- FIX: поддержка кириллицы в PDF ---
+# ReportLab по умолчанию использует Helvetica (Windows-1252), из-за чего
+# русские текст в таблицах отображается чёрными квадратами/кракозябрами.
+# Регистрируем DejaVu Sans с кириллицей и делаем его шрифтом по умолчанию.
+_FONT_CANDIDATES = [
+    ('DejaVuSans', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'),
+    ('DejaVuSans-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'),
+]
+
+
+def _register_cyrillic_fonts():
+    """Регистрирует шрифты с поддержкой кириллицы. Возвращает (regular, bold)."""
+    regular, bold = 'Helvetica', 'Helvetica-Bold'
+    for name, path in _FONT_CANDIDATES:
+        if os.path.exists(path):
+            try:
+                pdfmetrics.registerFont(TTFont(name, path))
+                if name == 'DejaVuSans':
+                    regular = name
+                else:
+                    bold = name
+            except Exception:
+                pass
+    if regular != 'Helvetica' and bold != 'Helvetica':
+        try:
+            pdfmetrics.registerFontFamily(
+                'DejaVuSans', normal='DejaVuSans', bold='DejaVuSans-Bold',
+                italic='DejaVuSans', boldItalic='DejaVuSans-Bold',
+            )
+        except Exception:
+            pass
+    return regular, bold
+
+
+FONT_REGULAR, FONT_BOLD = _register_cyrillic_fonts()
+
+
+def _apply_base_styles(styles):
+    """Ставит кириллический шрифт в базовые стили getSampleStyleSheet()."""
+    for style_name in ('Normal', 'Title', 'Heading1', 'Heading2', 'Heading3'):
+        if style_name in styles.byName:
+            styles[style_name].fontName = FONT_BOLD if style_name.startswith('Heading') or style_name == 'Title' else FONT_REGULAR
+    return styles
 
 
 def create_telemetry_pdf(well_id, period='24h'):
@@ -35,7 +81,7 @@ def create_telemetry_pdf(well_id, period='24h'):
                             rightMargin=2*cm, leftMargin=2*cm,
                             topMargin=2*cm, bottomMargin=2*cm)
 
-    styles = getSampleStyleSheet()
+    styles = _apply_base_styles(getSampleStyleSheet())
     title_style = ParagraphStyle(
         'CustomTitle',
         parent=styles['Heading1'],
@@ -76,7 +122,7 @@ def create_telemetry_pdf(well_id, period='24h'):
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3b82f6')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, 0), FONT_BOLD),
         ('FONTSIZE', (0, 0), (-1, 0), 11),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
@@ -112,7 +158,7 @@ def create_telemetry_pdf(well_id, period='24h'):
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#10b981')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, 0), FONT_BOLD),
             ('FONTSIZE', (0, 0), (-1, 0), 10),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
@@ -143,7 +189,7 @@ def create_telemetry_pdf(well_id, period='24h'):
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6366f1')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, 0), FONT_BOLD),
         ('FONTSIZE', (0, 0), (-1, -1), 8),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
@@ -186,7 +232,7 @@ def create_shift_report_pdf(well_ids=None, date=None):
                             rightMargin=1.5*cm, leftMargin=1.5*cm,
                             topMargin=1.5*cm, bottomMargin=1.5*cm)
 
-    styles = getSampleStyleSheet()
+    styles = _apply_base_styles(getSampleStyleSheet())
     title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=20, textColor=colors.HexColor('#1f2937'), spaceAfter=12, alignment=1)
     heading_style = ParagraphStyle('CustomHeading', parent=styles['Heading2'], fontSize=14, textColor=colors.HexColor('#374151'), spaceAfter=8, spaceBefore=12)
 
@@ -212,7 +258,7 @@ def create_shift_report_pdf(well_ids=None, date=None):
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3b82f6')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, 0), FONT_BOLD),
         ('FONTSIZE', (0, 0), (-1, 0), 11),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
@@ -245,7 +291,7 @@ def create_shift_report_pdf(well_ids=None, date=None):
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#ef4444')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, 0), FONT_BOLD),
             ('FONTSIZE', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
