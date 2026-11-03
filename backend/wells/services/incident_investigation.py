@@ -21,7 +21,16 @@ def get_incident_data(well_id, alert_timestamp):
         created_at__range=(start_time, end_time)
     ).order_by('created_at').values())
 
+    # ПРОРЕЖИВАНИЕ (downsampling): если записей больше 300, берем каждую N-ю точку,
+    # чтобы график в модалке расследования не вешал браузер тысячами точек.
+    # Аномалии (detect_anomalies) считаем по ПОЛНЫМ данным ДО прореживания.
     anomalies = detect_anomalies(telemetry_24h)
+
+    original_count = len(telemetry_24h)
+    if len(telemetry_24h) > 300:
+        step = len(telemetry_24h) // 300
+        telemetry_24h = telemetry_24h[::step]
+        print(f"✅ Downsampled telemetry: {len(telemetry_24h)} points (was {original_count})")
 
     return {
         'well': {

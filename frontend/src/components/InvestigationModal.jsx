@@ -34,6 +34,60 @@ const formatTime = (iso) => {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
+/* Группировка дублирующихся алертов: одинаковый alert_type+parameter,
+   идущие подряд с интервалом < 10 минут, склеиваются в одну запись "×N" */
+const groupAlerts = (alerts) => {
+  if (!alerts || alerts.length === 0) return [];
+
+  const sorted = [...alerts].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const groups = [];
+  let currentGroup = null;
+
+  for (const alert of sorted) {
+    const key = `${alert.alert_type}-${alert.parameter}`;
+
+    if (!currentGroup || currentGroup.key !== key) {
+      if (currentGroup) groups.push(currentGroup);
+      currentGroup = {
+        key,
+        alert_type: alert.alert_type,
+        parameter: alert.parameter,
+        message: alert.message,
+        value: alert.value,
+        threshold: alert.threshold,
+        is_active: alert.is_active,
+        start_time: alert.created_at,
+        end_time: alert.created_at,
+        count: 1
+      };
+    } else {
+      // Склеиваем, если разница во времени меньше 10 минут
+      const timeDiff = (new Date(alert.created_at) - new Date(currentGroup.end_time)) / 1000 / 60;
+      if (timeDiff <= 10) {
+        currentGroup.count++;
+        currentGroup.end_time = alert.created_at;
+        currentGroup.value = alert.value; // Берем последнее значение
+      } else {
+        groups.push(currentGroup);
+        currentGroup = {
+          key,
+          alert_type: alert.alert_type,
+          parameter: alert.parameter,
+          message: alert.message,
+          value: alert.value,
+          threshold: alert.threshold,
+          is_active: alert.is_active,
+          start_time: alert.created_at,
+          end_time: alert.created_at,
+          count: 1
+        };
+      }
+    }
+  }
+  if (currentGroup) groups.push(currentGroup);
+  return groups;
+};
+
 /* Кастомный Tooltip с информацией об аномалиях (событиях-интервалах) */
 const AnomalyTooltip = ({ active, payload, anomalies, paramKey }) => {
   if (!active || !payload || !payload.length) return null;
@@ -424,33 +478,47 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
               </h3>
               {(data.alerts_24h || []).length > 0 ? (
  <div className="space-y-2 max-h-56 overflow-y-auto">
-                  {(data.alerts_24h || []).slice(0, 30).map((alert) => (
+                  {groupAlerts(data.alerts_24h || []).map((group, idx) => (
                     <div
-                      key={alert.id}
- className={`p-3 rounded border-l-4 text-sm ${
-                        alert.alert_type === 'critical'
-                          ? 'bg-red-900/40 border-red-500'
-                          : alert.alert_type === 'warning'
+                      key={idx}
+                      className={`p-3 rounded-lg border-l-4 text-sm transition ${
+                        group.alert_type === 'critical'
+                          ? 'bg-red-900/40 border-red-500 hover:bg-red-900/30'
+                          : group.alert_type === 'warning'
                           ? 'bg-yellow-900/40 border-yellow-500'
                           : 'bg-blue-900/40 border-blue-500'
                       }`}
                     >
- <div className="flex justify-between">
- <span className="font-semibold">
-                          {alert.alert_type === 'critical'
-                            ? '🔴'
-                            : alert.alert_type === 'warning'
-                            ? '🟡'
-                            : '🔵'}{' '}
-                          {alert.message}
-                        </span>
- <span className="text-xs text-zinc-400">{formatTime(alert.created_at)}</span>
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold">
+                              {group.alert_type === 'critical'
+                                ? '🔴'
+                                : group.alert_type === 'warning'
+                                ? '🟡'
+                                : '🔵'}{' '}
+                              {group.message}
+                            </span>
+                            {group.count > 1 && (
+                              <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full font-medium border border-red-500/30 whitespace-nowrap">
+                                ×{group.count}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-zinc-400">
+                            {group.parameter}: {Number(group.value).toFixed(2)} (порог:{' '}
+                            {Number(group.threshold).toFixed(2)})
+                            {!group.is_active && <span className="ml-2 text-green-500">✓ закрыт</span>}
+                          </p>
+                        </div>
+                        <div className="text-right text-xs text-zinc-500 whitespace-nowrap">
+                          <p>{formatTime(group.start_time)}</p>
+                          {group.count > 1 && (
+                            <p className="text-zinc-600">— {formatTime(group.end_time)}</p>
+                          )}
+                        </div>
                       </div>
- <p className="text-xs text-zinc-400 mt-1">
-                        {alert.parameter}: {Number(alert.value).toFixed(2)} (порог:{' '}
-                        {Number(alert.threshold).toFixed(2)})
- {!alert.is_active && <span className="ml-2 text-green-500">✓ закрыт</span>}
-                      </p>
                     </div>
                   ))}
                 </div>

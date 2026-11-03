@@ -60,6 +60,19 @@ def check_and_create_alerts(well, telemetry_data):
             if value is None:
                 continue
             if condition(value):
+                # ДЕДУПЛИКАЦИЯ: проверяем, есть ли уже АКТИВНЫЙ алерт с таким же
+                # параметром и типом для этой скважины — не создаём дубликаты
+                # при длительной аварии (иначе сотни одинаковых записей).
+                existing_alert = Alert.objects.filter(
+                    well=well,
+                    parameter=param,
+                    alert_type=alert_type,
+                    is_active=True
+                ).exists()
+
+                if existing_alert:
+                    continue  # Алерт уже висит открытым, не создаем дубликат!
+
                 alert = Alert.objects.create(
                     well=well,
                     alert_type=alert_type,
