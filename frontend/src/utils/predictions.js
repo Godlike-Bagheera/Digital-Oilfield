@@ -8,10 +8,12 @@ export function analyzeTrend(telemetryData, parameter) {
     const times = recentData.map(d => new Date(d.timestamp).getTime());
 
     const n = values.length;
-    const sumX = times.reduce((a, b) => a + b, 0);
+    // Регрессия по индексу точки (0..n-1): slope = изменение параметра за один шаг телеметрии.
+    // Устойчиво к шуму и не даёт взрывного экстраполирования при малом интервале между точками.
+    const sumX = (n * (n - 1)) / 2;
     const sumY = values.reduce((a, b) => a + b, 0);
-    const sumXY = times.reduce((acc, x, i) => acc + x * values[i], 0);
-    const sumXX = times.reduce((acc, x) => acc + x * x, 0);
+    const sumXY = values.reduce((acc, y, i) => acc + i * y, 0);
+    const sumXX = ((n - 1) * n * (2 * n - 1)) / 6;
 
     const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
@@ -32,21 +34,40 @@ export function analyzeTrend(telemetryData, parameter) {
     const lastValue = values[values.length - 1];
     const lastTime = times[times.length - 1];
 
-    const futureTime = lastTime + (4 * 60 * 60 * 1000);
-    const predictedValue = slope * futureTime + intercept;
+    // Горизонт прогноза: 4 часа, выраженные в шагах телеметрии.
+    // slope/intercept считаются по индексу точки (значение за шаг), поэтому прогноз
+    // и время согласованны и не взрываются при малом интервале между точками.
+    const medianStepMs = n > 1 ? (times[n - 1] - times[0]) / (n - 1) : 5000;
+    const horizonSteps = (4 * 60 * 60 * 1000) / medianStepMs;
+
+    // Защита от ложных срабатываний на шуму: тренд должен быть статистически значимым —
+    // линейная составляющая должна превышать остаточный разброс данных (критерий R²).
+    const fitted = values.map((_, i) => slope * i + intercept);
+    const residuals = values.map((y, i) => y - fitted[i]);
+    const stdResid = Math.sqrt(residuals.reduce((a, r) => a + r * r, 0) / n);
+    const meanY = sumY / n;
+    const varY = values.reduce((a, y) => a + (y - meanY) * (y - meanY), 0) / n;
+    const rSquared = varY > 0 ? 1 - (stdResid * stdResid) / varY : 0;
+    if (rSquared < 0.5) {
+        return { has_prediction: false };
+    }
 
     let has_prediction = false;
     let estimated_time = null;
     let confidence = 'low';
+    // Прогноз значения на горизонте 4 часа (в шагах телеметрии от конца окна)
+    const predictedValue = slope * (n - 1 + horizonSteps) + intercept;
 
-    if (threshold.critical_min !== undefined && predictedValue < threshold.critical_min) {
+    if (threshold.critical_min !== undefined && slope < 0 && predictedValue < threshold.critical_min) {
         has_prediction = true;
-        estimated_time = (threshold.critical_min - intercept) / slope;
-        confidence = Math.abs(slope) > 0.01 ? 'high' : 'medium';
-    } else if (threshold.critical_max !== undefined && predictedValue > threshold.critical_max) {
+        const minutesToCritical = (threshold.critical_min - lastValue) / slope * medianStepMs;
+        estimated_time = lastTime + minutesToCritical;
+        confidence = rSquared > 0.9 ? 'high' : 'medium';
+    } else if (threshold.critical_max !== undefined && slope > 0 && predictedValue > threshold.critical_max) {
         has_prediction = true;
-        estimated_time = (threshold.critical_max - intercept) / slope;
-        confidence = Math.abs(slope) > 0.01 ? 'high' : 'medium';
+        const minutesToCritical = (threshold.critical_max - lastValue) / slope * medianStepMs;
+        estimated_time = lastTime + minutesToCritical;
+        confidence = rSquared > 0.9 ? 'high' : 'medium';
     }
 
     return {

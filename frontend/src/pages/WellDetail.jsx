@@ -4,6 +4,9 @@ import TelemetryChart from '../components/TelemetryChart';
 import AlertList from '../components/AlertList';
 import PeriodSelector from '../components/PeriodSelector';
 import HealthGauge from '../components/HealthGauge';
+import PredictiveAlert from '../components/PredictiveAlert';
+import InvestigationModal from '../components/InvestigationModal';
+import { checkAllPredictions } from '../utils/predictions';
 import * as api from '../services/api';
 
 const STATUS_BADGE = {
@@ -25,11 +28,17 @@ export default function WellDetail() {
   const [trainingMode, setTrainingMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [predictions, setPredictions] = useState([]);
+  const [investigationOpen, setInvestigationOpen] = useState(false);
+  const [selectedAlertId, setSelectedAlertId] = useState(null);
 
   const fetchTelemetry = useCallback(async (wellId, prd) => {
     try {
       const data = await api.getTelemetry(wellId, { period: prd });
-      setTelemetry(Array.isArray(data) ? data : data.results || []);
+      const list = Array.isArray(data) ? data : data.results || [];
+      setTelemetry(list);
+      // Предиктивный анализ по полученной телеметрии
+      setPredictions(checkAllPredictions(list));
     } catch (e) {
       console.error('Ошибка загрузки телеметрии:', e);
     }
@@ -130,6 +139,55 @@ export default function WellDetail() {
 
   const chartData = (key) => telemetry.map((t) => ({ timestamp: t.timestamp, value: t[key] }));
 
+  // Экспорт телеметрии скважины в Excel
+  const handleExportTelemetry = async () => {
+    try {
+      const response = await fetch('/api/wells/export/telemetry/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ well_id: well.id, period }),
+      });
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `telemetry_well_${well.number}_${period}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert('Ошибка экспорта: ' + error.message);
+    }
+  };
+
+  // Экспорт сменного отчёта в Excel
+  const handleExportShiftReport = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch('/api/wells/export/shift-report/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: today }),
+      });
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `shift_report_${today}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert('Ошибка экспорта: ' + error.message);
+    }
+  };
+
   const charts = [
     { title: 'Ток двигателя', unit: 'А', color: '#3b82f6', icon: '⚡', key: 'current', tip: 'current' },
     { title: 'Давление затрубное', unit: 'МПа', color: '#ef4444', icon: '📊', key: 'casing_pressure', tip: 'casing_pressure' },
@@ -190,6 +248,16 @@ export default function WellDetail() {
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 
+      {/* Предиктивные алерты */}
+      {predictions.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-4">🔮 Предиктивные алерты</h2>
+          {predictions.map((pred, idx) => (
+            <PredictiveAlert key={idx} prediction={pred} />
+          ))}
+        </div>
+      )}
+
       {/* Сетка графиков */}
       <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
         {charts.map((c) => (
@@ -219,27 +287,37 @@ export default function WellDetail() {
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => console.log('Экспорт в Excel: скважина', well.number)}
+            onClick={handleExportTelemetry}
             className="rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-600"
           >
             📊 Экспорт в Excel
           </button>
           <button
             type="button"
-            onClick={() => console.log('Сменный отчёт PDF: скважина', well.number)}
+            onClick={handleExportShiftReport}
             className="rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-600"
           >
             📄 Сменный отчёт PDF
           </button>
           <button
             type="button"
-            onClick={() => console.log('Расследование инцидента: скважина', well.number)}
+            onClick={() => {
+              setSelectedAlertId(alerts.length > 0 ? alerts[0].id : null);
+              setInvestigationOpen(true);
+            }}
             className="rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-600"
           >
             🔍 Расследовать инцидент
           </button>
         </div>
       </section>
+
+      <InvestigationModal
+        isOpen={investigationOpen}
+        onClose={() => setInvestigationOpen(false)}
+        wellId={well?.id}
+        alertId={selectedAlertId}
+      />
     </div>
   );
 }
