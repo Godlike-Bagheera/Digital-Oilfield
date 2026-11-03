@@ -1,124 +1,71 @@
 # Цифровое месторождение (Digital Oilfield)
 
-Веб-дашборд для мониторинга нефтепромыслового оборудования в режиме реального времени.
+Веб-дашборд для мониторинга нефтепромыслового оборудования в режиме реального времени с бизнес-логикой ручного ремонта скважин (SCADA-подход).
+
 Проект разработан в рамках производственной практики.
 
-[![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://python.org)
-[![Django](https://img.shields.io/badge/Django-5.0-green)](https://djangoproject.com)
-[![React](https://img.shields.io/badge/React-18-61dafb)](https://react.dev)
+## Содержание
 
----
+- [О проекте](#о-проекте)
+- [Технологии](#технологии)
+- [Быстрый старт](#быстрый-старт)
+- [Ключевые фичи](#ключевые-фичи)
+- [API эндпоинты](#api-эндпоинты)
+- [Симулятор телеметрии](#симулятор-телеметрии)
+- [Структура проекта](#структура-проекта)
+- [Тестирование](#тестирование)
+- [Возможные проблемы](#возможные-проблемы)
 
-## 📋 Содержание
+## О проекте
 
-- [🎯 О проекте](#-о-проекте)
-- [🛠 Технологии](#-технологии)
-- [📁 Структура проекта](#-структура-проекта)
-- [🚀 Быстрый старт](#-быстрый-старт)
-- [✨ Функционал](#-функционал)
-- [🌐 API эндпоинты](#-api-эндпоинты)
-- [🤖 Симулятор телеметрии](#-симулятор-телеметрии)
-- [🧪 Тестирование](#-тестирование)
-- [❓ Возможные проблемы](#-возможные-проблемы)
-- [📞 Контакты](#-контакты)
+Система предназначена для операторов нефтедобычи и инженеров. Позволяет:
+- В реальном времени отслеживать состояние 10 скважин
+- Получать алерты при отклонениях параметров от нормы
+- Проводить расследование инцидентов с группировкой аномалий
+- Получать предиктивные алерты о будущих авариях (линейная регрессия)
+- Управлять циклом жизни скважины: **работа → авария → ремонт → перезапуск**
+- Экспортировать отчёты в Excel и PDF
 
----
+### Бизнес-логика
 
-## 🎯 О проекте
+В отличие от учебных проектов, реализована **реальная SCADA-логика**:
+- Скважина после аварии **НЕ чинится автоматически**
+- Требуется ручное вмешательство оператора (кнопка «Завершить ремонт»)
+- Во время ремонта симулятор генерирует «мёртвые» данные (ток=0)
+- После ремонта параметры сбрасываются к идеальным значениям (health_index=100)
 
-**«Цифровое месторождение»** — промышленный веб-дашборд для операторов нефтепромыслового
-оборудования (ЦДНГ). Система в реальном времени отслеживает телеметрию **10 скважин**:
-ток, затрубное и нагнетательное давление, температуру, дебит жидкости и нефти, обводнённость
-и частоту качаний.
-
-**Ключевые возможности:**
-
-- 📡 Real-time графики телеметрии с автообновлением каждые 3 секунды
-- 🏥 Индекс здоровья скважины (Health Index 0–100) по каждому параметру и сводный
-- 🔔 Трёхуровневая система алертов: critical / warning / predictive
-- 🔮 Предиктивная аналитика — прогноз аварии по тренду (линейная регрессия)
-- 🔍 Расследование инцидентов: срез данных за 24 часа до аварии с графиками
-- 🎓 Обучающий режим с подсказками для молодых специалистов
-
----
-
-## 🛠 Технологии
+## Технологии
 
 ### Backend
-
-| Технология | Назначение |
-|---|---|
-| Python 3.10+ | Язык |
-| Django 5.0 + DRF | REST API |
-| SQLite | База данных (для разработки) |
-| django-unfold | Красивая тёмная админка |
-| openpyxl | Экспорт в Excel |
-| reportlab | Экспорт в PDF |
-| numpy | Расчёты health index и регрессии |
+- Python 3.10+
+- Django 5.0 + Django REST Framework
+- SQLite (для разработки)
+- django-unfold (современная админка с тёмной темой)
+- openpyxl (экспорт в Excel)
+- reportlab (экспорт в PDF с поддержкой кириллицы)
+- numpy (математические расчёты)
 
 ### Frontend
+- React 18 + Vite
+- Tailwind CSS (тёмная тема в стиле Vercel/Linear)
+- Recharts (графики телеметрии)
+- React Router
+- Axios
 
-| Технология | Назначение |
-|---|---|
-| React 18 + Vite | SPA-фреймворк и сборка |
-| Tailwind CSS | Дизайн-система (тёмная тема) |
-| Recharts | Графики телеметрии |
-| React Router | Навигация |
-| Axios | HTTP-клиент |
-
----
-
-## 📁 Структура проекта
-
-```
-digital-oilfield/
-├── backend/
-│   ├── backend/                    # Настройки Django (settings.py, urls.py)
-│   ├── static/admin/css/           # Кастомный CSS для админки
-│   ├── wells/                      # Основное приложение
-│   │   ├── models.py               # Well, TelemetryData, Alert, TrainingTip
-│   │   ├── views.py                # REST API (ViewSet + /repair/)
-│   │   ├── admin.py                # Админка с цветными бейджами статусов
-│   │   ├── services/               # health_calculator, alert_generator,
-│   │   │                           # excel_export, pdf_export, prediction
-│   │   └── management/commands/    # simulate_telemetry, simulate_once,
-│   │                               # create_test_data, create_superuser
-│   ├── manage.py
-│   ├── fix_cdng.py                 # Утилита распределения скважин по ЦДНГ
-│   ├── test_system.py              # Тесты бэкенда
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/             # 9 компонентов (WellCard, TelemetryChart,
-│   │   │                           # InvestigationModal, HealthGauge и др.)
-│   │   ├── pages/                  # Dashboard, WellDetail, AlertsPage, ReportsPage
-│   │   └── services/               # api.js (axios + endpoints)
-│   ├── test_frontend.js            # Статическая проверка фронтенда
-│   └── package.json
-├── screenshots/                    # Скриншоты интерфейса
-├── test_all.py                     # Комплексная проверка всего проекта
-└── README.md
-```
-
----
-
-## 🚀 Быстрый старт
+## Быстрый старт
 
 ### Требования
-
-- **Python 3.10+** — [скачать](https://python.org)
-- **Node.js 18+** — [скачать](https://nodejs.org)
-- **Git** — [скачать](https://git-scm.com)
+- Python 3.10+ ([скачать](https://python.org))
+- Node.js 18+ ([скачать](https://nodejs.org))
+- Git
 
 ### 1. Клонирование
-
 ```bash
 git clone https://github.com/Godlike-Bagheera/Digital-Oilfield.git
 cd Digital-Oilfield
 ```
 
 ### 2. Backend (Django)
-
 ```bash
 cd backend
 python -m venv venv
@@ -132,201 +79,164 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py create_superuser      # Логин: admin / admin123
-python manage.py create_test_data      # Создаст 10 скважин + подсказки
-python manage.py simulate_once         # Первая порция телеметрии
-python manage.py runserver             # http://127.0.0.1:8000
+python manage.py create_superuser    # Логин: admin / admin123
+python manage.py create_test_data    # Создаст 10 скважин по 3 ЦДНГ
+python manage.py simulate_once       # Первая порция данных
+python manage.py runserver           # http://127.0.0.1:8000
 ```
 
 ### 3. Frontend (React)
-
 ```bash
 # В НОВОМ терминале
 cd frontend
 npm install
-npm run dev                            # http://localhost:5173
+npm run dev                          # http://localhost:5173
 ```
 
 ### 4. Открыть сайт
+- http://localhost:5173 — основной интерфейс
+- http://127.0.0.1:8000/admin/ — админка (admin / admin123)
 
-| Ссылка | Что там |
-|---|---|
-| 🌐 **http://localhost:5173** | Основной интерфейс (дашборд) |
-| 🔐 **http://127.0.0.1:8000/admin/** | Админка (admin / admin123) |
+## Ключевые фичи
 
-> 💡 Чтобы данные «жили» постоянно, в третьем терминале запустите
-> `python manage.py simulate_telemetry --continuous` (см. раздел про симулятор).
+1. **Мониторинг 10 скважин** с фильтрами по 3 ЦДНГ и статусу
+2. **8 графиков телеметрии** в реальном времени (обновление каждые 5 сек)
+3. **Health Index (0-100%)** с весовыми коэффициентами параметров
+4. **Предиктивная аналитика** — синие алерты о будущих авариях (линейная регрессия)
+5. **Расследование инцидентов** с группировкой аномалий и ReferenceArea на графиках
+6. **Ручной перезапуск** после ремонта с мгновенным сбросом к идеальным параметрам
+7. **Табы «Активные» / «Вся история»** алертов с пагинацией
+8. **Фильтр алертов по дате** (календарь)
+9. **Экспорт телеметрии** в Excel и PDF с поддержкой кириллицы (Arial/DejaVu)
+10. **Сменные отчёты** (Excel/PDF) с повтором шапки на каждой странице
+11. **Unfold админка** с тёмной темой и цветными бейджами статусов
+12. **Симулятор телеметрии** с режимом генерации аномалий
+13. **Обучающий режим** с подсказками для молодых специалистов
+14. **Автоматическая генерация алертов** с защитой от дубликатов
+15. **N+1 оптимизация** запросов к БД и downsampling телеметрии
 
----
-
-## ✨ Функционал
-
-- 📊 **Дашборд** со списком из 10 скважин, KPI-карточками и фильтрами по ЦДНГ и статусу
-- 📈 **Детальная страница скважины** с 8 графиками телеметрии (обновление каждые 3 сек)
-- ❤️ **Индекс здоровья** (0–100) — gauge-диаграмма по каждому параметру
-- 🔔 **Система алертов** (critical / warning / predictive) с автозакрытием нормальных событий;
-  аварийные скважины НЕ «чинятся» сами — только ручным перезапуском
-- 🔍 **Модальное окно расследования** инцидентов: срез за 24 ч, графики с ReferenceLine аномалий
-- 🎓 **Обучающий режим** с подсказками для молодых специалистов (toggle «?»)
-- 🔮 **Предиктивные алерты** — прогноз приближающейся аварии через линейную регрессию
-- 📥 **Экспорт** телеметрии и сменных отчётов в **Excel** и **PDF**
-- 🔧 **Ручной перезапуск** скважин после ремонта (кнопка UI, API `/repair/`, action в админке)
-- 🗂 **Админка Unfold**: тёмная тема, цветные бейджи статусов, сайдбар «Мониторинг / Обучение»
-
----
-
-## 🌐 API эндпоинты
-
-Базовый URL: `http://127.0.0.1:8000/api/`
+## API эндпоинты
 
 | Метод | URL | Описание |
-|---|---|---|
-| GET | `/wells/` | Список скважин (`?status=alarm&cdng=ЦДНГ-2`) |
-| GET | `/wells/{id}/` | Детали скважины |
-| GET | `/wells/{id}/telemetry/?period=24h` | Телеметрия (1h / 6h / 24h / 7d) |
-| GET | `/wells/{id}/alerts/` | Алерты скважины |
-| GET | `/wells/{id}/investigate/?alert_id=N` | Данные для расследования инцидента |
-| POST | `/wells/{id}/repair/` | Завершить ремонт (перезапуск + закрытие алертов) |
-| POST | `/wells/export/telemetry/` | Экспорт телеметрии в Excel |
-| POST | `/wells/export/telemetry-pdf/` | Экспорт телеметрии в PDF |
-| POST | `/wells/export/shift-report/` | Сменный отчёт Excel |
-| POST | `/wells/export/shift-report-pdf/` | Сменный отчёт PDF |
-| GET | `/alerts/` | Все алерты (`?is_active=true`) |
-| GET | `/training-tips/` | Обучающие подсказки |
+|-------|-----|----------|
+| GET | /api/wells/ | Список скважин |
+| GET | /api/wells/{id}/ | Детали скважины |
+| GET | /api/wells/{id}/telemetry/?period=24h | Телеметрия |
+| GET | /api/wells/{id}/alerts/ | Алерты скважины |
+| POST | /api/wells/{id}/repair/ | Завершить ремонт |
+| GET | /api/alerts/ | Все алерты |
+| GET | /api/training-tips/ | Обучающие подсказки |
+| POST | /api/wells/export/telemetry/ | Экспорт в Excel |
+| POST | /api/wells/export/telemetry-pdf/ | Экспорт в PDF |
 
-Пример:
+## Симулятор телеметрии
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/wells/1/repair/
-# {"status":"success","message":"Скважина №101 перезапущена после ремонта",...}
-```
-
----
-
-## 🤖 Симулятор телеметрии
-
-Генерирует реалистичные данные телеметрии, считает health index и создаёт алерты.
-
-```bash
-cd backend
-
-# Однократная генерация для всех скважин
+# Однократная генерация
 python manage.py simulate_once
-# то же самое:
-python manage.py simulate_telemetry --once
 
-# Непрерывный режим (новая порция данных каждые 5 секунд)
+# Непрерывный режим (данные каждые 5 сек)
 python manage.py simulate_telemetry --continuous
 
-# С аномалиями (обрыв штанг, перегрев — 5% шанс на цикл)
+# С аномалиями (обрыв штанг, перегрев)
 python manage.py simulate_telemetry --continuous --with-anomalies
-
-# Генерация с «мёртвыми» данными для скважин в аварии/ремонте
-# (команда всегда проходит по всем активным скважинам: is_active=True)
-python manage.py simulate_telemetry --once
 ```
 
-Особенности бизнес-логики:
+**Важно:** скважины в статусе alarm или maintenance генерируют только «мёртвые» данные (ток=0) до ручного перезапуска.
 
-- Скважина в статусе `alarm` / `maintenance` получает **«мёртвые» данные**
-  (ток = 0, дебит = 0, health_index = 0) и **не чинится автоматически**;
-- Возврат в `online` — только вручную: кнопка «🔧 Завершить ремонт»,
-  `POST /api/wells/{id}/repair/` или action в админке.
+## Структура проекта
 
----
+```
+Digital-Oilfield/
+├── backend/
+│   ├── backend/                 # Настройки Django
+│   │   ├── settings.py          # UNFOLD конфиг, БД
+│   │   ├── urls.py              # Маршруты API
+│   │   └── wsgi.py
+│   ├── wells/                   # Основное приложение
+│   │   ├── models.py            # Well, TelemetryData, Alert, TrainingTip
+│   │   ├── views.py             # REST API ViewSet
+│   │   ├── serializers.py       # DRF сериализаторы
+│   │   ├── admin.py             # Админка с цветными бейджами
+│   │   ├── services/
+│   │   │   ├── health_calculator.py
+│   │   │   ├── alert_generator.py
+│   │   │   ├── excel_export.py
+│   │   │   ├── pdf_export.py
+│   │   │   └── incident_investigation.py
+│   │   └── management/commands/
+│   │       ├── simulate_telemetry.py
+│   │       ├── create_test_data.py
+│   │       └── create_superuser.py
+│   ├── manage.py
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/          # WellCard, TelemetryChart, InvestigationModal
+│   │   ├── pages/               # Dashboard, WellDetail, AlertsPage, ReportsPage
+│   │   ├── services/            # api.js
+│   │   ├── utils/               # predictions.js
+│   │   └── App.jsx
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+├── test_all.py                  # Комплексный тест
+└── README.md
+```
 
-## 🧪 Тестирование
+## Тестирование
 
 ```bash
-# Комплексная проверка всего проекта (из корня)
+# Из корня проекта
 python test_all.py
-# Ожидаемый финал: 🎉 ВСЕ КОМПОНЕНТЫ РАБОТАЮТ КОРРЕКТНО
 
 # Только backend
 cd backend && python test_system.py
 
-# Только frontend (статический анализ исходников)
-cd frontend && node test_frontend.js
-
-# Сборка фронтенда
-cd frontend && npm run build          # должно быть "✓ built"
-
-# Проверка Django
-cd backend && python manage.py check  # "System check identified no issues"
+# Только frontend
+cd frontend && npm run build
 ```
 
----
-
-## ❓ Возможные проблемы
+## Возможные проблемы
 
 ### 1. PowerShell: «выполнение сценариев отключено»
-
+**Решение:**
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 ```
-
 Или используйте CMD вместо PowerShell.
 
-### 2. «npm не распознано как команда»
-
-Node.js не в PATH. Добавьте:
-
-```cmd
-set PATH=C:\Program Files\nodejs;%PATH%
+### 2. 403 Forbidden на /api/wells/{id}/repair/
+**Решение:** добавьте в декоратор метода:
+```python
+@action(..., permission_classes=[AllowAny], authentication_classes=[])
 ```
 
-или переустановите Node.js с галочкой «Add to PATH».
+### 3. Чёрные квадраты вместо русского текста в PDF
+**Решение:** проверьте в pdf_export.py что в font_candidates есть путь к C:\Windows\Fonts\arial.ttf (Windows) или DejaVuSans.ttf (Linux).
 
-### 3. «Address already in use» на порту 8000
-
-```cmd
-:: Windows
-taskkill /F /IM python.exe
+### 4. 404 на /favicon.ico
+**Решение:** добавьте inline SVG в index.html:
+```html
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ЦМ</text></svg>">
 ```
 
-```bash
-# Linux/Mac
-pkill -f "manage.py runserver"
-```
+### 5. Белый экран в браузере (React crash)
+**Решение:** проверьте консоль DevTools (F12). Обычно проблема в обращении к старым полям аномалий (a.z_score вместо a.z_score_max).
 
-### 4. Белая страница в браузере
-
-Откройте DevTools (F12) → Console. Чаще всего не запущен backend
-(`python manage.py runserver`) или база пуста — выполните `create_test_data`
-и `simulate_once`.
-
-### 5. Скважины все в ЦДНГ-1
-
-Запустите утилиту распределения:
-
+### 6. Все скважины в ЦДНГ-1
+**Решение:** запустите:
 ```bash
 cd backend
-python fix_cdng.py
+python manage.py shell -c "from wells.models import Well; Well.objects.filter(number__in=[105,106,107]).update(cdng='ЦДНГ-2'); Well.objects.filter(number__in=[108,109,110]).update(cdng='ЦДНГ-3')"
 ```
 
-или одной командой:
+## Контакты
 
-```bash
-python manage.py shell -c "from wells.models import Well; Well.objects.filter(number__in=['105','106','107']).update(cdng='ЦДНГ-2'); Well.objects.filter(number__in=['108','109','110']).update(cdng='ЦДНГ-3')"
-```
-
-### 6. Кнопка «Завершить ремонт» возвращает 403
-
-Убедитесь, что вы на актуальной версии (`git pull`) — эндпоинт `/repair/`
-работает без авторизации (`permission_classes=[AllowAny]`).
-
----
-
-## 📞 Контакты
-
-Разработчик: студент-практикант  
-Практика: Татнефть / Альметьевский государственный нефтяной институт  
+Разработчик: студент Альметьевского государственного нефтяного института  
+Практика: ПАО «Татнефть»  
 Дата: Ноябрь 2026
 
-## 📄 Лицензия
+## Лицензия
 
 Учебный проект. Все права защищены.
-
----
-
-**Сделано с ❤️ для цифровизации нефтепромыслов**
