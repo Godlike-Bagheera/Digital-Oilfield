@@ -125,6 +125,51 @@ class WellViewSet(ModelViewSet):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @action(detail=False, methods=['post'], url_path='export/telemetry-pdf')
+    def export_telemetry_pdf(self, request):
+        """Экспорт телеметрии в PDF"""
+        from wells.services.pdf_export import create_telemetry_pdf
+        from django.http import FileResponse
+        from rest_framework import status
+        import os
+
+        well_id = request.data.get('well_id')
+        period = request.data.get('period', '24h')
+
+        if not well_id:
+            return Response({'error': 'well_id required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            filepath = create_telemetry_pdf(well_id, period)
+            filename = os.path.basename(filepath)
+            response = FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['post'], url_path='export/shift-report-pdf')
+    def export_shift_report_pdf(self, request):
+        """Экспорт сменного отчёта в PDF"""
+        from wells.services.pdf_export import create_shift_report_pdf
+        from django.http import FileResponse
+        from rest_framework import status
+        from datetime import datetime
+        import os
+
+        well_ids = request.data.get('well_ids')
+        date_str = request.data.get('date')
+        date = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else None
+
+        try:
+            filepath = create_shift_report_pdf(well_ids, date)
+            filename = os.path.basename(filepath)
+            response = FileResponse(open(filepath, 'rb'), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class AlertViewSet(ModelViewSet):
     """Алерты с фильтрацией ?is_active=true|false и ?well=<id>."""

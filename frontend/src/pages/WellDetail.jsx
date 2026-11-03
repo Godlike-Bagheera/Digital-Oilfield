@@ -163,6 +163,29 @@ export default function WellDetail() {
     }
   };
 
+  // Экспорт телеметрии скважины в PDF
+  const handleExportTelemetryPdf = async () => {
+    try {
+      const response = await fetch('/api/wells/export/telemetry-pdf/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ well_id: well.id, period: period }),
+      });
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `telemetry_well_${well.number}_${period}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert('Ошибка экспорта PDF: ' + error.message);
+    }
+  };
+
   // Экспорт сменного отчёта в Excel
   const handleExportShiftReport = async () => {
     try {
@@ -185,6 +208,30 @@ export default function WellDetail() {
       document.body.removeChild(a);
     } catch (error) {
       alert('Ошибка экспорта: ' + error.message);
+    }
+  };
+
+  // Экспорт сменного отчёта в PDF
+  const handleExportShiftReportPdf = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const response = await fetch('/api/wells/export/shift-report-pdf/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: today }),
+      });
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `shift_report_${today}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert('Ошибка экспорта PDF: ' + error.message);
     }
   };
 
@@ -294,8 +341,22 @@ export default function WellDetail() {
           </button>
           <button
             type="button"
+            onClick={handleExportTelemetryPdf}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+          >
+            📄 Телеметрия PDF
+          </button>
+          <button
+            type="button"
             onClick={handleExportShiftReport}
             className="rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-600"
+          >
+            📄 Сменный отчёт Excel
+          </button>
+          <button
+            type="button"
+            onClick={handleExportShiftReportPdf}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
           >
             📄 Сменный отчёт PDF
           </button>
