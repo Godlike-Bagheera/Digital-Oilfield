@@ -25,16 +25,17 @@ export const getTelemetry = async (wellId, params = {}) => {
   return response.data;
 };
 
-// Получить список алертов (с фильтрами, например { is_active: 'true' })
+// Получить список алертов (с фильтрами, например { is_active: 'true', well: 1 })
+// Возвращает массив results (учитывая пагинацию DRF)
 export const getAlerts = async (params = {}) => {
   const response = await api.get('/alerts/', { params });
-  return response.data; // { count, results, ... }
+  return response.data.results || response.data;
 };
 
 // Получить обучающие подсказки
 export const getTrainingTips = async (params = {}) => {
   const response = await api.get('/training-tips/', { params });
-  return response.data; // { count, results, ... }
+  return response.data.results || response.data;
 };
 
 export default api;
