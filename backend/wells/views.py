@@ -42,7 +42,7 @@ class WellViewSet(ModelViewSet):
         since = timezone.now() - delta
         records = (
             well.telemetry.filter(timestamp__gte=since)
-            .order_by('-timestamp')
+            .order_by('timestamp')
         )
         serializer = TelemetryDataSerializer(records, many=True)
         return Response(serializer.data)

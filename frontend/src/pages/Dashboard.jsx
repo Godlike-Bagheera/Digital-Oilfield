@@ -36,12 +36,11 @@ export default function Dashboard() {
   useEffect(() => {
     fetchWells();
     fetchAlerts();
-    // Автообновление каждые 5 секунд
+    // Автообновление каждые 2 секунды
     const interval = setInterval(() => {
-      console.log('Обновление дашборда', new Date().toISOString());
       fetchWells();
       fetchAlerts();
-    }, 5000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [fetchWells, fetchAlerts]);
 
@@ -74,7 +73,7 @@ export default function Dashboard() {
       {/* Заголовок страницы */}
       <div className="mb-8">
         <h1 className="mb-2 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-4xl font-bold text-transparent">
-          🛢️ Цифровое месторождение
+          Список скважин
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           Мониторинг нефтепромыслового оборудования в реальном времени
@@ -205,7 +204,7 @@ export default function Dashboard() {
       )}
 
       <p className="mt-8 text-center text-xs text-gray-500 dark:text-gray-400">
-        Данные обновляются каждые 5 секунд
+        Данные обновляются каждые 2 секунды
       </p>
     </div>
   );

@@ -86,10 +86,9 @@ export default function WellDetail() {
     fetchWell(id);
     fetchTrainingTips();
     const interval = setInterval(() => {
-      console.log('Обновление телеметрии', new Date().toISOString());
       fetchTelemetry(id, period);
       fetchAlerts(id);
-    }, 5000);
+    }, 2000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
