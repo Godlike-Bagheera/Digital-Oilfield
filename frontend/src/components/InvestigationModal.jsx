@@ -41,15 +41,15 @@ const AnomalyTooltip = ({ active, payload, anomalies, paramKey }) => {
     (a) => a.timestamp === ts && a.parameter === paramKey
   );
   return (
-    <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl text-sm max-w-xs">
-      <p className="text-gray-400 mb-1">{formatTime(ts)}</p>
-      <p className="font-bold" style={{ color: point.color || '#fff' }}>
+ <div className="bg-gray-900 border border-gray-600 rounded-lg p-3 shadow-xl text-sm max-w-xs">
+ <p className="text-gray-400 mb-1">{formatTime(ts)}</p>
+ <p className="font-bold" style={{ color: point.color || '#fff' }}>
         {paramKey}: {Number(point.value).toFixed(2)}
       </p>
       {pointAnomalies.map((a, i) => (
-        <div key={i} className="mt-2 pt-2 border-t border-red-800 text-red-400">
-          <p className="font-semibold">⚠️ Аномалия (z-score: {a.z_score.toFixed(2)})</p>
-          <p className="text-xs text-gray-300">
+ <div key={i} className="mt-2 pt-2 border-t border-red-800 text-red-400">
+ <p className="font-semibold">⚠️ Аномалия (z-score: {a.z_score.toFixed(2)})</p>
+ <p className="text-xs text-gray-300">
             Среднее: {a.mean.toFixed(2)} | СКО: {a.std.toFixed(2)}
           </p>
         </div>
@@ -62,9 +62,9 @@ const HITooltip = ({ active, payload }) => {
   if (!active || !payload || !payload.length) return null;
   const p = payload[0];
   return (
-    <div className="bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl text-sm">
-      <p className="text-gray-400">{formatTime(p.payload?.timestampFull)}</p>
-      <p className="font-bold text-green-400">Индекс здоровья: {Number(p.value).toFixed(0)}%</p>
+ <div className="bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl text-sm">
+ <p className="text-gray-400">{formatTime(p.payload?.timestampFull)}</p>
+ <p className="font-bold text-green-400">Индекс здоровья: {Number(p.value).toFixed(0)}%</p>
     </div>
   );
 };
@@ -144,44 +144,44 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+ className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-gray-800 rounded-lg p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
+ <div className="bg-gray-800 rounded-lg p-6 max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-700">
         {/* Заголовок модалки */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">🔍 Расследование инцидента</h2>
+ <div className="flex justify-between items-center mb-4">
+ <h2 className="text-2xl font-bold">🔍 Расследование инцидента</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl leading-none px-2"
+ className="text-gray-400 hover:text-white text-2xl leading-none px-2"
             aria-label="Закрыть"
           >
             ×
           </button>
         </div>
 
-        {loading && <div className="text-center py-12 text-gray-400">Загрузка данных...</div>}
+ {loading && <div className="text-center py-12 text-gray-400">Загрузка данных...</div>}
 
         {data && (
           <div>
             {/* Информация о скважине */}
-            <div className="mb-4 p-4 bg-gray-700 rounded-lg flex flex-wrap gap-x-8 gap-y-2">
+ <div className="mb-4 p-4 bg-gray-700 rounded-lg flex flex-wrap gap-x-8 gap-y-2">
               <div>
-                <span className="text-gray-400 text-sm">Скважина</span>
-                <p className="font-bold text-lg">№{data.well.number}</p>
+ <span className="text-gray-400 text-sm">Скважина</span>
+ <p className="font-bold text-lg">№{data.well.number}</p>
               </div>
               <div>
-                <span className="text-gray-400 text-sm">ЦДНГ</span>
-                <p className="font-semibold">{data.well.cdng}</p>
+ <span className="text-gray-400 text-sm">ЦДНГ</span>
+ <p className="font-semibold">{data.well.cdng}</p>
               </div>
               <div>
-                <span className="text-gray-400 text-sm">Тип насоса</span>
-                <p className="font-semibold">{data.well.pump_type}</p>
+ <span className="text-gray-400 text-sm">Тип насоса</span>
+ <p className="font-semibold">{data.well.pump_type}</p>
               </div>
               <div>
-                <span className="text-gray-400 text-sm">Статус</span>
+ <span className="text-gray-400 text-sm">Статус</span>
                 <p
-                  className={`font-semibold ${
+ className={`font-semibold ${
                     data.well.status === 'alarm'
                       ? 'text-red-400'
                       : data.well.status === 'warning'
@@ -195,18 +195,18 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
             </div>
 
             {/* Селектор параметра */}
-            <div className="mb-3">
-              <h3 className="text-sm text-gray-400 mb-2 uppercase tracking-wide">
+ <div className="mb-3">
+ <h3 className="text-sm text-gray-400 mb-2 uppercase tracking-wide">
                 Параметр для анализа
               </h3>
-              <div className="flex flex-wrap gap-2">
+ <div className="flex flex-wrap gap-2">
                 {PARAM_OPTIONS.map((p) => {
                   const anomalyCount = anomalies.filter((a) => a.parameter === p.key).length;
                   return (
                     <button
                       key={p.key}
                       onClick={() => setSelectedParam(p.key)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition flex items-center gap-1.5 ${
+ className={`px-3 py-1.5 rounded-lg text-sm transition flex items-center gap-1.5 ${
                         selectedParam === p.key
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -214,7 +214,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                     >
                       {p.label}
                       {anomalyCount > 0 && (
-                        <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
+ <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
                           {anomalyCount}
                         </span>
                       )}
@@ -225,12 +225,12 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
             </div>
 
             {/* Основной график параметра с подсветкой аномалий */}
-            <div className="mb-6 p-4 bg-gray-900 rounded-lg">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold">
+ <div className="mb-6 p-4 bg-gray-900 rounded-lg">
+ <div className="flex justify-between items-center mb-3">
+ <h3 className="font-bold">
                   📈 {currentOption?.label} — последние 24 часа
                 </h3>
-                <span className="text-sm text-red-400">
+ <span className="text-sm text-red-400">
                   {anomalyTimestamps.length > 0
                     ? `⚠️ Аномалий: ${anomalyTimestamps.length} (красные пунктирные линии)`
                     : 'Аномалий по параметру не обнаружено'}
@@ -296,8 +296,8 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
             </div>
 
             {/* График индекса здоровья с порогами 90/60/30 */}
-            <div className="mb-6 p-4 bg-gray-900 rounded-lg">
-              <h3 className="font-bold mb-3">💚 Индекс здоровья за 24 часа</h3>
+ <div className="mb-6 p-4 bg-gray-900 rounded-lg">
+ <h3 className="font-bold mb-3">💚 Индекс здоровья за 24 часа</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={hiData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <defs>
@@ -347,27 +347,27 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
             </div>
 
             {/* Сводка по аномалиям */}
-            <div className="mb-6">
-              <h3 className="font-bold mb-2">
+ <div className="mb-6">
+ <h3 className="font-bold mb-2">
                 ⚠️ Обнаруженные аномалии (|z| &gt; 2): {anomalies.length}
               </h3>
               {anomalies.length > 0 ? (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
+ <div className="space-y-2 max-h-48 overflow-y-auto">
                   {anomalies.slice(0, 20).map((anomaly, idx) => (
                     <div
                       key={idx}
-                      className="p-2 bg-yellow-900/40 border border-yellow-800 rounded text-sm flex justify-between items-center"
+ className="p-2 bg-yellow-900/40 border border-yellow-800 rounded text-sm flex justify-between items-center"
                     >
                       <span>
                         <strong>{anomaly.parameter}</strong>: {anomaly.value.toFixed(2)}
-                        <span className="text-gray-400 ml-2">
+ <span className="text-gray-400 ml-2">
                           (среднее: {anomaly.mean.toFixed(2)}, СКО: {anomaly.std.toFixed(2)})
                         </span>
                       </span>
-                      <span className="flex items-center gap-3">
-                        <span className="text-xs text-gray-400">{formatTime(anomaly.timestamp)}</span>
+ <span className="flex items-center gap-3">
+ <span className="text-xs text-gray-400">{formatTime(anomaly.timestamp)}</span>
                         <span
-                          className={`font-mono text-xs px-2 py-0.5 rounded ${
+ className={`font-mono text-xs px-2 py-0.5 rounded ${
                             anomaly.z_score > 3 ? 'bg-red-600 text-white' : 'bg-yellow-600 text-black'
                           }`}
                         >
@@ -377,25 +377,25 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                     </div>
                   ))}
                   {anomalies.length > 20 && (
-                    <p className="text-sm text-gray-400">... и ещё {anomalies.length - 20} аномалий</p>
+ <p className="text-sm text-gray-400">... и ещё {anomalies.length - 20} аномалий</p>
                   )}
                 </div>
               ) : (
-                <p className="text-gray-400">Аномалий не обнаружено</p>
+ <p className="text-gray-400">Аномалий не обнаружено</p>
               )}
             </div>
 
             {/* Алерты за 24 часа */}
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">
+ <div className="mb-4">
+ <h3 className="font-bold mb-2">
                 🚨 Алерты за 24 часа: {(data.alerts_24h || []).length}
               </h3>
               {(data.alerts_24h || []).length > 0 ? (
-                <div className="space-y-2 max-h-56 overflow-y-auto">
+ <div className="space-y-2 max-h-56 overflow-y-auto">
                   {(data.alerts_24h || []).slice(0, 30).map((alert) => (
                     <div
                       key={alert.id}
-                      className={`p-3 rounded border-l-4 text-sm ${
+ className={`p-3 rounded border-l-4 text-sm ${
                         alert.alert_type === 'critical'
                           ? 'bg-red-900/40 border-red-500'
                           : alert.alert_type === 'warning'
@@ -403,8 +403,8 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                           : 'bg-blue-900/40 border-blue-500'
                       }`}
                     >
-                      <div className="flex justify-between">
-                        <span className="font-semibold">
+ <div className="flex justify-between">
+ <span className="font-semibold">
                           {alert.alert_type === 'critical'
                             ? '🔴'
                             : alert.alert_type === 'warning'
@@ -412,23 +412,23 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                             : '🔵'}{' '}
                           {alert.message}
                         </span>
-                        <span className="text-xs text-gray-400">{formatTime(alert.created_at)}</span>
+ <span className="text-xs text-gray-400">{formatTime(alert.created_at)}</span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">
+ <p className="text-xs text-gray-400 mt-1">
                         {alert.parameter}: {Number(alert.value).toFixed(2)} (порог:{' '}
                         {Number(alert.threshold).toFixed(2)})
-                        {!alert.is_active && <span className="ml-2 text-green-500">✓ закрыт</span>}
+ {!alert.is_active && <span className="ml-2 text-green-500">✓ закрыт</span>}
                       </p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400">Нет алертов за период</p>
+ <p className="text-gray-400">Нет алертов за период</p>
               )}
             </div>
 
             {/* Телеметрия — итоговая строка */}
-            <div className="text-sm text-gray-400 border-t border-gray-700 pt-3">
+ <div className="text-sm text-gray-400 border-t border-gray-700 pt-3">
               📊 Телеметрия за 24 часа: {chartData.length} записей
               {chartData.length > 0 && (
                 <>

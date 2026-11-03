@@ -32,8 +32,8 @@ export default function HealthGauge({ value = 0, size = 100 }) {
   const color = getColor(value);
 
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
+ <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+ <svg width={size} height={size} className="-rotate-90">
         {/* Внешний круг (фон) */}
         <circle
           cx={size / 2}
@@ -42,7 +42,7 @@ export default function HealthGauge({ value = 0, size = 100 }) {
           fill="none"
           stroke="#d1d5db"
           strokeWidth={stroke}
-          className="dark:opacity-0"
+ className="opacity-0"
         />
         <circle
           cx={size / 2}
@@ -51,7 +51,7 @@ export default function HealthGauge({ value = 0, size = 100 }) {
           fill="none"
           stroke="#374151"
           strokeWidth={stroke}
-          className="hidden dark:block"
+ className="hidden block"
         />
         {/* Дуга прогресса */}
         <circle
@@ -67,7 +67,7 @@ export default function HealthGauge({ value = 0, size = 100 }) {
         />
       </svg>
       <span
-        className="absolute font-bold text-xl"
+ className="absolute font-bold text-xl"
         style={{ color }}
       >
         {Math.round(value)}%

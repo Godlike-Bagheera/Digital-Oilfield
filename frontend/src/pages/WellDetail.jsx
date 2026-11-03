@@ -80,7 +80,7 @@ export default function WellDetail() {
     }
   }, []);
 
-  // Монтирование / смена id скважины + автообновление каждые 5 секунд
+  // Монтирование / смена id скважины + автообновление каждые 3 секунды
   useEffect(() => {
     setLoading(true);
     fetchWell(id);
@@ -88,7 +88,8 @@ export default function WellDetail() {
     const interval = setInterval(() => {
       fetchTelemetry(id, period);
       fetchAlerts(id);
-    }, 2000);
+      console.log('🔄 Обновлено:', new Date().toLocaleTimeString());
+    }, 3000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -101,21 +102,21 @@ export default function WellDetail() {
 
   if (loading) {
     return (
-      <div className="animate-fade-in">
+ <div className="animate-fade-in">
         {/* Skeleton шапки */}
-        <div className="mb-6 flex items-center justify-between rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-800/50">
-          <div className="space-y-3">
-            <div className="h-8 w-48 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
-            <div className="h-4 w-64 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+ <div className="mb-6 flex items-center justify-between rounded-2xl p-6 shadow-lg bg-gray-800/50">
+ <div className="space-y-3">
+ <div className="h-8 w-48 animate-pulse rounded-lg bg-gray-700" />
+ <div className="h-4 w-64 animate-pulse rounded bg-gray-700" />
           </div>
-          <div className="h-28 w-28 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
+ <div className="h-28 w-28 animate-pulse rounded-full bg-gray-700" />
         </div>
         {/* Skeleton графиков */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+ <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-800/50">
-              <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-              <div className="h-[300px] animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700" />
+ <div key={i} className="rounded-2xl p-6 shadow-lg bg-gray-800/50">
+ <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-gray-700" />
+ <div className="h-[300px] animate-pulse rounded-xl bg-gray-700" />
             </div>
           ))}
         </div>
@@ -125,12 +126,12 @@ export default function WellDetail() {
 
   if (error) {
     return (
-      <div className="mx-auto mt-10 max-w-lg rounded-xl border border-red-600 bg-red-900/30 p-6 text-center">
-        <p className="mb-4 text-red-300">{error}</p>
+ <div className="mx-auto mt-10 max-w-lg rounded-xl border border-red-600 bg-red-900/30 p-6 text-center">
+ <p className="mb-4 text-red-300">{error}</p>
         <button
           type="button"
           onClick={() => { setLoading(true); fetchWell(id); }}
-          className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+ className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
         >
           Повторить
         </button>
@@ -140,9 +141,9 @@ export default function WellDetail() {
 
   if (!well) {
     return (
-      <div className="mt-10 text-center text-gray-400">
-        <p className="mb-4 text-xl">Скважина не найдена</p>
-        <button type="button" onClick={() => navigate('/')} className="text-blue-400 hover:underline">
+ <div className="mt-10 text-center text-gray-400">
+ <p className="mb-4 text-xl">Скважина не найдена</p>
+ <button type="button" onClick={() => navigate('/')} className="text-blue-400 hover:underline">
           ← Назад к списку
         </button>
       </div>
@@ -265,40 +266,40 @@ export default function WellDetail() {
   return (
     <div>
       {/* Шапка страницы */}
-      <div className="mb-6">
+ <div className="mb-6">
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="mb-4 flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"
+ className="mb-4 flex items-center gap-2 text-sm transition-colors hover:text-blue-600 text-gray-400 hover:text-white"
         >
           ← Назад к списку
         </button>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-lg transition-colors dark:border-gray-700 dark:bg-gray-800">
+ <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 shadow-lg transition-colors border-gray-700 bg-gray-800">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Скважина №{well.number}</h1>
-            <p className="mt-1 text-gray-500 dark:text-gray-400">
+ <h1 className="text-3xl font-bold text-white">Скважина №{well.number}</h1>
+ <p className="mt-1 text-gray-500 text-gray-400">
               {well.cdng} | {well.pump_type_display || well.pump_type} | Введена {well.commission_date}
             </p>
-            <span className={`mt-3 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${badge.cls}`}>
+ <span className={`mt-3 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${badge.cls}`}>
               {badge.text}
             </span>
           </div>
 
-          <div className="flex items-center gap-6">
+ <div className="flex items-center gap-6">
             {healthIndex !== null && <HealthGauge value={healthIndex} size={120} />}
             {/* Переключатель режима обучения */}
-            <label className="flex cursor-pointer select-none items-center gap-3">
-              <span className="text-sm text-gray-700 dark:text-gray-300">🎓 Режим обучения</span>
+ <label className="flex cursor-pointer select-none items-center gap-3">
+ <span className="text-sm text-gray-700 text-gray-300">🎓 Режим обучения</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={trainingMode}
                 onClick={() => setTrainingMode((v) => !v)}
-                className={`relative h-7 w-12 rounded-full transition-colors ${trainingMode ? 'bg-blue-600' : 'bg-gray-600'}`}
+ className={`relative h-7 w-12 rounded-full transition-colors ${trainingMode ? 'bg-blue-600' : 'bg-gray-600'}`}
               >
                 <span
-                  className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`}
+ className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`}
                 />
               </button>
             </label>
@@ -307,14 +308,14 @@ export default function WellDetail() {
       </div>
 
       {/* Переключатель периода */}
-      <div className="mb-6">
+ <div className="mb-6">
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 
       {/* Предиктивные алерты */}
       {predictions.length > 0 && (
-        <div className="mb-6">
-          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">🔮 Предиктивные алерты</h2>
+ <div className="mb-6">
+ <h2 className="mb-4 text-xl font-bold text-white">🔮 Предиктивные алерты</h2>
           {predictions.map((pred, idx) => (
             <PredictiveAlert key={idx} prediction={pred} />
           ))}
@@ -322,7 +323,7 @@ export default function WellDetail() {
       )}
 
       {/* Сетка графиков */}
-      <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+ <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
         {charts.map((c) => (
           <TelemetryChart
             key={c.key}
@@ -339,40 +340,40 @@ export default function WellDetail() {
       </div>
 
       {/* Активные алерты */}
-      <section className="mb-8">
-        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Активные алерты</h2>
+ <section className="mb-8">
+ <h2 className="mb-4 text-xl font-bold text-white">Активные алерты</h2>
         <AlertList alerts={alerts} />
       </section>
 
       {/* Действия */}
-      <section className="mb-8">
-        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Действия</h2>
-        <div className="flex flex-wrap gap-3">
+ <section className="mb-8">
+ <h2 className="mb-4 text-xl font-bold text-white">Действия</h2>
+ <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={handleExportTelemetry}
-            className="rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+ className="rounded-lg px-4 py-2.5 text-sm font-medium transition-colors bg-gray-700 text-gray-100 hover:bg-gray-600"
           >
             📊 Экспорт в Excel
           </button>
           <button
             type="button"
             onClick={handleExportTelemetryPdf}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+ className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
           >
             📄 Телеметрия PDF
           </button>
           <button
             type="button"
             onClick={handleExportShiftReport}
-            className="rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+ className="rounded-lg px-4 py-2.5 text-sm font-medium transition-colors bg-gray-700 text-gray-100 hover:bg-gray-600"
           >
             📄 Сменный отчёт Excel
           </button>
           <button
             type="button"
             onClick={handleExportShiftReportPdf}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+ className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
           >
             📄 Сменный отчёт PDF
           </button>
@@ -382,7 +383,7 @@ export default function WellDetail() {
               setSelectedAlertId(alerts.length > 0 ? alerts[0].id : null);
               setInvestigationOpen(true);
             }}
-            className="rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+ className="rounded-lg px-4 py-2.5 text-sm font-medium transition-colors bg-gray-700 text-gray-100 hover:bg-gray-600"
           >
             🔍 Расследовать инцидент
           </button>
