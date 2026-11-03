@@ -144,8 +144,7 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
               dataKey="value"
               fill={`url(#gradient-${color.replace('#', '')})`}
               stroke="none"
-              isAnimationActive={true}
-              animationDuration={1000}
+              isAnimationActive={false}
             />
             <Line
               type="monotone"
@@ -154,8 +153,7 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
               strokeWidth={2}
               dot={false}
               activeDot={{ r: 4, strokeWidth: 0 }}
-              isAnimationActive={true}
-              animationDuration={1000}
+              isAnimationActive={false}
             />
           </ComposedChart>
         </ResponsiveContainer>

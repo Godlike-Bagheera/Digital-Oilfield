@@ -60,8 +60,9 @@ class WellListSerializer(serializers.ModelSerializer):
         ]
 
     def get_latest_telemetry(self, obj):
-        # ordering модели TelemetryData = ['-timestamp'], поэтому first() — самая свежая
-        latest = obj.telemetry.first()
+        # N+1 фикс: используем property latest_telemetry с явным
+        # order_by('-timestamp').first() (ORDER BY ... LIMIT 1 — один запрос)
+        latest = obj.latest_telemetry
         if latest is None:
             return None
         return TelemetryDataSerializer(latest).data
@@ -77,7 +78,7 @@ class WellDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_latest_telemetry(self, obj):
-        latest = obj.telemetry.first()
+        latest = obj.latest_telemetry
         if latest is None:
             return None
         return TelemetryDataSerializer(latest).data
