@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine,
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Area, ComposedChart,
 } from 'recharts';
 
 function formatTime(ts, period) {
@@ -95,7 +95,13 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
       {/* График */}
       {data && data.length ? (
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+          <ComposedChart data={data} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+            <defs>
+              <linearGradient id={`gradient-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#9ca3af" opacity={0.25} />
             <XAxis
               dataKey="timestamp"
@@ -113,6 +119,13 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
             />
             <Tooltip content={<CustomTooltip period={period} />} />
             <ReferenceLine y={current ?? undefined} stroke={color} strokeDasharray="4 4" strokeOpacity={0.4} />
+            <Area
+              dataKey="value"
+              fill={`url(#gradient-${color.replace('#', '')})`}
+              stroke="none"
+              isAnimationActive={true}
+              animationDuration={1000}
+            />
             <Line
               type="monotone"
               dataKey="value"
@@ -122,7 +135,7 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
               isAnimationActive={true}
               animationDuration={1000}
             />
-          </LineChart>
+          </ComposedChart>
         </ResponsiveContainer>
       ) : (
         <div className="flex h-[300px] items-center justify-center text-gray-500 dark:text-gray-400">

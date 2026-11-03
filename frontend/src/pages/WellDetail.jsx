@@ -102,8 +102,24 @@ export default function WellDetail() {
 
   if (loading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+      <div className="animate-fade-in">
+        {/* Skeleton шапки */}
+        <div className="mb-6 flex items-center justify-between rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-800/50">
+          <div className="space-y-3">
+            <div className="h-8 w-48 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
+            <div className="h-4 w-64 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+          </div>
+          <div className="h-28 w-28 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700" />
+        </div>
+        {/* Skeleton графиков */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-800/50">
+              <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+              <div className="h-[300px] animate-pulse rounded-xl bg-gray-200 dark:bg-gray-700" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

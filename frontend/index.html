@@ -4,6 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Цифровое месторождение</title>
+    <!-- Анти-FOUC: применяем сохранённую тему ДО загрузки CSS и React -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme') || 'dark';
+          if (saved === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
+          }
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
