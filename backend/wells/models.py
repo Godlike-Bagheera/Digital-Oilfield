@@ -143,5 +143,7 @@ class TrainingTip(models.Model):
         return f"{self.parameter} - {self.title}"
 
     class Meta:
+        # FIX UnorderedObjectListWarning: пагинатору DRF нужна упорядоченная queryset
+        ordering = ['parameter']
         verbose_name = "Обучающая подсказка"
         verbose_name_plural = "Обучающие подсказки"

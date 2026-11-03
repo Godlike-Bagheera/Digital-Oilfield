@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny  # разрешаем анонимный доступ (фикс 403)
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
@@ -81,7 +82,10 @@ class WellViewSet(ModelViewSet):
         incident_data = get_incident_data(well.id, alert_timestamp)
         return Response(incident_data)
 
-    @action(detail=True, methods=['post'], url_path='repair')
+    # FIX 403 Forbidden: явно разрешаем любой доступ к ручке ремонта.
+    # permission_classes=[AllowAny] на @action переопределяет глобальные
+    # настройки DRF и позволяет кнопке "Завершить ремонт" работать без логина.
+    @action(detail=True, methods=['post'], url_path='repair', permission_classes=[AllowAny])
     def repair(self, request, pk=None):
         """
         Завершить ремонт скважины (ручной перезапуск оператором).
