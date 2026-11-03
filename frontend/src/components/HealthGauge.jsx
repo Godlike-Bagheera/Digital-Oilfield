@@ -40,8 +40,18 @@ export default function HealthGauge({ value = 0, size = 100 }) {
           cy={size / 2}
           r={radius}
           fill="none"
+          stroke="#d1d5db"
+          strokeWidth={stroke}
+          className="dark:opacity-0"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
           stroke="#374151"
           strokeWidth={stroke}
+          className="hidden dark:block"
         />
         {/* Дуга прогресса */}
         <circle

@@ -32,7 +32,7 @@ const PredictiveAlert = ({ prediction }) => {
         : null;
 
     return (
-        <div className="bg-blue-900 border-2 border-blue-500 rounded-lg p-4 mb-4">
+        <div className="mb-4 rounded-lg border-2 border-blue-500 bg-blue-50 p-4 text-gray-900 transition-colors dark:bg-blue-900 dark:text-blue-100">
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <span className="text-2xl">🔮</span>

@@ -31,22 +31,22 @@ export default function AlertList({ alerts }) {
         return (
           <div
             key={alert.id}
-            className="flex overflow-hidden rounded-xl bg-gray-800 shadow-md"
+            className="flex overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md transition-colors dark:border-gray-700 dark:bg-gray-800"
           >
             <div className="w-1.5 shrink-0" style={{ backgroundColor: meta.bar }} />
             <div className="flex-1 p-4">
-              <p className="mb-1 flex items-center gap-2 font-semibold text-white">
+              <p className="mb-1 flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
                 <span>{meta.icon}</span> {alert.message}
               </p>
-              <p className="mb-2 text-sm text-gray-400">
-                Параметр: <span className="text-gray-200">{alert.parameter}</span> ·
-                Значение: <span className="text-gray-200">{alert.value}</span> (порог {alert.threshold}) ·
-                Сработал: <span className="text-gray-200">{getTimeAgo(alert.created_at)}</span>
+              <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                Параметр: <span className="font-medium text-gray-700 dark:text-gray-200">{alert.parameter}</span> ·
+                Значение: <span className="font-medium text-gray-700 dark:text-gray-200">{alert.value}</span> (порог {alert.threshold}) ·
+                Сработал: <span className="font-medium text-gray-700 dark:text-gray-200">{getTimeAgo(alert.created_at)}</span>
               </p>
               <button
                 type="button"
                 onClick={() => console.log('Расследование алерта:', alert)}
-                className="rounded-lg bg-gray-700 px-3 py-1.5 text-sm text-gray-200 transition-colors hover:bg-gray-600"
+                className="rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700"
               >
                 Расследовать
               </button>

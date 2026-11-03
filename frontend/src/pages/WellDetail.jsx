@@ -86,6 +86,7 @@ export default function WellDetail() {
     fetchWell(id);
     fetchTrainingTips();
     const interval = setInterval(() => {
+      console.log('Обновление телеметрии', new Date().toISOString());
       fetchTelemetry(id, period);
       fetchAlerts(id);
     }, 5000);
@@ -253,15 +254,15 @@ export default function WellDetail() {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="mb-4 flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
+          className="mb-4 flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"
         >
           ← Назад к списку
         </button>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-gray-800 p-5 shadow-md">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-lg transition-colors dark:border-gray-700 dark:bg-gray-800">
           <div>
-            <h1 className="text-3xl font-bold text-white">Скважина №{well.number}</h1>
-            <p className="mt-1 text-gray-400">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Скважина №{well.number}</h1>
+            <p className="mt-1 text-gray-500 dark:text-gray-400">
               {well.cdng} | {well.pump_type_display || well.pump_type} | Введена {well.commission_date}
             </p>
             <span className={`mt-3 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${badge.cls}`}>
@@ -273,7 +274,7 @@ export default function WellDetail() {
             {healthIndex !== null && <HealthGauge value={healthIndex} size={120} />}
             {/* Переключатель режима обучения */}
             <label className="flex cursor-pointer select-none items-center gap-3">
-              <span className="text-sm text-gray-300">🎓 Режим обучения</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">🎓 Режим обучения</span>
               <button
                 type="button"
                 role="switch"
@@ -298,7 +299,7 @@ export default function WellDetail() {
       {/* Предиктивные алерты */}
       {predictions.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-xl font-bold mb-4">🔮 Предиктивные алерты</h2>
+          <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">🔮 Предиктивные алерты</h2>
           {predictions.map((pred, idx) => (
             <PredictiveAlert key={idx} prediction={pred} />
           ))}
@@ -324,18 +325,18 @@ export default function WellDetail() {
 
       {/* Активные алерты */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-bold text-white">Активные алерты</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Активные алерты</h2>
         <AlertList alerts={alerts} />
       </section>
 
       {/* Действия */}
       <section className="mb-8">
-        <h2 className="mb-4 text-xl font-bold text-white">Действия</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Действия</h2>
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={handleExportTelemetry}
-            className="rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-600"
+            className="rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
           >
             📊 Экспорт в Excel
           </button>
@@ -349,7 +350,7 @@ export default function WellDetail() {
           <button
             type="button"
             onClick={handleExportShiftReport}
-            className="rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-600"
+            className="rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
           >
             📄 Сменный отчёт Excel
           </button>
@@ -366,7 +367,7 @@ export default function WellDetail() {
               setSelectedAlertId(alerts.length > 0 ? alerts[0].id : null);
               setInvestigationOpen(true);
             }}
-            className="rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-600"
+            className="rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
           >
             🔍 Расследовать инцидент
           </button>
