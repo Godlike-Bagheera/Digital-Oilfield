@@ -52,9 +52,9 @@ const AnomalyTooltip = ({ active, payload, anomalies, paramKey }) => {
       </p>
       {pointAnomalies.map((a, i) => (
  <div key={i} className="mt-2 pt-2 border-t border-red-900/60 text-red-400">
- <p className="font-semibold">⚠️ Аномалия (z-score: {a.z_score.toFixed(2)})</p>
+ <p className="font-semibold">⚠️ Аномалия (макс z-score: {Number(a.z_score_max ?? 0).toFixed(2)})</p>
  <p className="text-xs text-zinc-300">
-            Среднее: {a.mean.toFixed(2)} | СКО: {a.std.toFixed(2)}
+            Значения: {Number(a.min_value ?? 0).toFixed(2)}–{Number(a.max_value ?? 0).toFixed(2)} | Длительность: {a.duration_minutes || 0} мин. | Точек: {a.count || 0}
           </p>
         </div>
       ))}
@@ -389,18 +389,20 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                       <span>
                         <strong>{PARAM_OPTIONS.find((p) => p.key === ev.parameter)?.label || ev.parameter}</strong>: {' '}
                         от {formatTime(ev.start_time)} до {formatTime(ev.end_time)} ({ev.duration_minutes} мин),
-                        значения {Number(ev.min_value).toFixed(2)}–{Number(ev.max_value).toFixed(2)},
-                        точек: {ev.count}
- <span className="text-zinc-400 ml-2">
-                          (среднее: {ev.mean.toFixed(2)}, СКО: {ev.std.toFixed(2)})
-                        </span>
+                        значения {Number(ev.min_value ?? 0).toFixed(2)}–{Number(ev.max_value ?? 0).toFixed(2)},
+                        точек: {ev.count ?? 0}
+                        {(typeof ev.mean === 'number' && typeof ev.std === 'number') && (
+                          <span className="text-zinc-400 ml-2">
+                            (среднее: {ev.mean.toFixed(2)}, СКО: {ev.std.toFixed(2)})
+                          </span>
+                        )}
                       </span>
  <span
  className={`font-mono text-xs px-2 py-0.5 rounded ${
-                          ev.z_score_max > 3 ? 'bg-red-600 text-white' : 'bg-yellow-600 text-black'
+                          Number(ev.z_score_max ?? 0) > 3 ? 'bg-red-600 text-white' : 'bg-yellow-600 text-black'
                         }`}
  >
-                        z={ev.z_score_max.toFixed(2)}
+                        z={Number(ev.z_score_max ?? 0).toFixed(2)}
                       </span>
                     </div>
                   ))}
