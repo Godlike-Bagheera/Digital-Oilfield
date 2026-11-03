@@ -39,7 +39,10 @@ export default function WellDetail() {
       const list = Array.isArray(data) ? data : data.results || [];
       setTelemetry(list);
       // Предиктивный анализ по полученной телеметрии
-      setPredictions(checkAllPredictions(list));
+      const preds = checkAllPredictions(list);
+      setPredictions(preds);
+      // Лог для проверки в консоли браузера (F12)
+      console.log('🔮 Предиктивные алерты:', preds);
     } catch (e) {
       console.error('Ошибка загрузки телеметрии:', e);
     }
