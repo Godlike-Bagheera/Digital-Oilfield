@@ -35,6 +35,8 @@ export default function WellDetail() {
   // Фильтрация и пагинация алертов: 'active' | 'history'
   const [alertFilter, setAlertFilter] = useState('active');
   const [visibleAlertsCount, setVisibleAlertsCount] = useState(5);
+  // Фильтр по дате для вкладки «Вся история» (пустая строка — без фильтра)
+  const [alertDate, setAlertDate] = useState('');
 
   const fetchTelemetry = useCallback(async (wellId, prd) => {
     try {
@@ -317,10 +319,19 @@ export default function WellDetail() {
     { title: 'Число качаний', unit: 'кач/мин', color: '#ec4899', icon: '⚙️', key: 'stroke_rate', tip: null },
   ];
 
-  // Фильтрация алертов по табам и пагинация (5 записей + «Показать ещё»)
-  const filteredAlerts = alerts.filter((a) =>
-    alertFilter === 'active' ? a.is_active : true
-  );
+  // Фильтрация алертов по табам, дате (вкладка «История») и пагинация (5 записей + «Показать ещё»)
+  const filteredAlerts = alerts.filter(a => {
+    // 1. Фильтр по табу (активные/история)
+    if (alertFilter === 'active' && !a.is_active) return false;
+
+    // 2. Фильтр по дате (только если выбрана дата и мы в истории)
+    if (alertFilter === 'history' && alertDate && a.created_at) {
+      const alertDateStr = new Date(a.created_at).toISOString().split('T')[0];
+      if (alertDateStr !== alertDate) return false;
+    }
+
+    return true;
+  });
   const displayedAlerts = filteredAlerts.slice(0, visibleAlertsCount);
 
   return (
@@ -426,30 +437,52 @@ export default function WellDetail() {
       {/* Алерты: активные / история + пагинация */}
  <section className="mb-8">
  <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Алерты</h2>
-        {/* Табы: Активные / Вся история */}
-        <div className="mb-4 flex gap-2">
-          <button
-            type="button"
-            onClick={() => { setAlertFilter('active'); setVisibleAlertsCount(5); }}
-            className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
-              alertFilter === 'active'
-                ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
-                : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
-            }`}
-          >
-            Активные ({alerts.filter((a) => a.is_active).length})
-          </button>
-          <button
-            type="button"
-            onClick={() => { setAlertFilter('history'); setVisibleAlertsCount(5); }}
-            className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
-              alertFilter === 'history'
-                ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
-                : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
-            }`}
-          >
-            Вся история ({alerts.length})
-          </button>
+        {/* Табы: Активные / Вся история + календарь фильтрации истории */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setAlertFilter('active'); setAlertDate(''); setVisibleAlertsCount(5); }}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                alertFilter === 'active'
+                  ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
+                  : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+              }`}
+            >
+              Активные ({alerts.filter((a) => a.is_active).length})
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAlertFilter('history'); setVisibleAlertsCount(5); }}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                alertFilter === 'history'
+                  ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
+                  : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+              }`}
+            >
+              Вся история ({alerts.length})
+            </button>
+          </div>
+
+          {alertFilter === 'history' && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={alertDate}
+                onChange={(e) => { setAlertDate(e.target.value); setVisibleAlertsCount(5); }}
+                className="rounded-lg border border-zinc-800 bg-[#09090b] px-3 py-1.5 text-sm text-zinc-300 focus:outline-none focus:border-zinc-600 [color-scheme:dark]"
+              />
+              {alertDate && (
+                <button
+                  type="button"
+                  onClick={() => setAlertDate('')}
+                  className="text-xs text-blue-400 transition hover:text-blue-300 hover:underline"
+                >
+                  Сбросить
+                </button>
+              )}
+            </div>
+          )}
         </div>
         {/* Клик по «Расследовать» в списке алертов открывает модалку с данными этого алерта */}
         <AlertList alerts={displayedAlerts} onInvestigate={(alert) => setSelectedAlert(alert)} />
