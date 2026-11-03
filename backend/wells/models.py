@@ -17,6 +17,7 @@ class Well(models.Model):
         ONLINE = 'online', 'Онлайн'
         WARNING = 'warning', 'Внимание'
         ALARM = 'alarm', 'Авария'
+        MAINTENANCE = 'maintenance', 'В ремонте'  # НОВЫЙ: скважина стоит в ремонте до ручного перезапуска
         OFFLINE = 'offline', 'Офлайн'
 
     number = models.CharField(
