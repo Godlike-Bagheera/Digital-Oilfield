@@ -16,6 +16,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',  # Красивая тема админки — ДОЛЖНО БЫТЬ ПЕРЕД django.contrib.admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -111,4 +112,69 @@ CORS_ALLOW_ALL_ORIGINS = True
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+}
+
+# Django Unfold — настройка темы админки
+
+UNFOLD = {
+    "SITE_HEADER": "Цифровое месторождение - Администрирование",
+    "SITE_TITLE": "Цифровое месторождение",
+    "INDEX_TITLE": "Панель управления",
+    "COLORS": {
+        "base": {
+            "50": "249 250 251",
+            "950": "17 24 39",
+        },
+        "primary": {
+            "50": "236 253 245",
+            "100": "209 250 229",
+            "200": "167 243 208",
+            "300": "110 231 183",
+            "400": "52 211 153",
+            "500": "16 185 129",
+            "600": "5 150 105",
+            "700": "4 120 87",
+            "800": "6 95 70",
+            "900": "4 78 56",
+            "950": "2 44 34",
+        },
+    },
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+        "navigation": [
+            {
+                "title": "Мониторинг",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Скважины",
+                        "icon": "oil_barrel",
+                        "link": "/admin/wells/well/",
+                    },
+                    {
+                        "title": "Телеметрия",
+                        "icon": "monitoring",
+                        "link": "/admin/wells/telemetrydata/",
+                    },
+                    {
+                        "title": "Алерты",
+                        "icon": "warning",
+                        "link": "/admin/wells/alert/",
+                    },
+                ],
+            },
+            {
+                "title": "Обучение",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Подсказки",
+                        "icon": "school",
+                        "link": "/admin/wells/trainingtip/",
+                    },
+                ],
+            },
+        ],
+    },
 }
