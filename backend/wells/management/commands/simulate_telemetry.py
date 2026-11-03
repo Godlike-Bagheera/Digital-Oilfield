@@ -93,6 +93,35 @@ class Command(BaseCommand):
             return
 
         for well in wells:
+            # КРИТИЧЕСКИЙ БИЗНЕС-БАГ (исправлен): если скважина в аварии или на ремонте —
+            # она НЕ генерирует нормальные данные и НЕ "чинится" автоматически.
+            # Пишем "мёртвые" значения (обрыв штанг, скважина стоит) до ручного
+            # перезапуска оператором через POST /api/wells/{id}/repair/ или админку.
+            if well.status in [Well.Status.ALARM, Well.Status.MAINTENANCE]:
+                dead_data = {
+                    'current': 0.0,          # Ток = 0 (двигатель не работает)
+                    'casing_pressure': 0.1,  # Давление падает до атмосферного
+                    'discharge_pressure': 0.1,
+                    'temperature': 15.0,     # Остывает до температуры среды
+                    'flow_rate_liquid': 0.0, # Нет потока
+                    'flow_rate_oil': 0.0,    # Нет добычи
+                    'water_cut': 0.0,
+                    'stroke_rate': 0.0,      # Нет качаний
+                }
+                # Сохраняем телеметрию с health_index = 0 (мёртвая скважина).
+                # ВАЖНО: НЕ вызываем check_and_create_alerts — новые алерты для
+                # мёртвых скважин не создаём (они уже в alarm), статус не меняется.
+                TelemetryData.objects.create(
+                    well=well,
+                    health_index=0,
+                    **dead_data
+                )
+                self.stdout.write(self.style.WARNING(
+                    f'Скважина №{well.number}: статус={well.status} — '
+                    f'генерируются "мёртвые" данные (ждёт ручного ремонта)'
+                ))
+                continue
+
             last = TelemetryData.objects.filter(well=well).order_by('-timestamp').first()
 
             data = {}
@@ -100,6 +129,8 @@ class Command(BaseCommand):
                 prev = getattr(last, param, None) if last else None
                 data[param] = _next_value(prev, cfg)
 
+            # Аномалии (5% шанс) применяются ТОЛЬКО к скважинам online/warning —
+            # скважины в alarm/maintenance сюда уже не доходят (continue выше)
             anomaly_name = None
             if with_anomalies and random.random() < 0.05:
                 anomaly_name, changes = random.choice(list(ANOMALIES.items()))

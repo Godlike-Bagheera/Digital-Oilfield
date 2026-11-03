@@ -54,6 +54,7 @@ except ImportError:
     requests = None
 
 from wells.models import Well, TelemetryData, Alert, TrainingTip  # noqa: E402
+from django.utils import timezone  # noqa: E402  (для эмуляции ручного repair в тесте алертов)
 
 
 # ---------------------------------------------------------------------------
@@ -242,13 +243,30 @@ def test_alert_generator():
         _fail(f"Ожидался статус alarm/critical, получен: '{new_status}'")
         ok = False
 
-    # Возврат к норме — алерты должны закрыться, статус вернуться в online
+    # Возврат к норме — по НОВОЙ бизнес-логике скважина НЕ должна "чиниться" сама:
+    # она остаётся в alarm с активными алертами до ручного ремонта (POST /repair/).
+    # (Раньше здесь проверялось автоматическое закрытие алертов — это и был бизнес-баг.)
     created_ok, restored_status = check_and_create_alerts(well, _make_normal_telemetry())
     active_after = Alert.objects.filter(well=well, is_active=True).count()
-    if active_after == 0 and restored_status == 'online':
-        _ok("После возврата к норме активные алерты закрыты, статус: 'online'")
+    if active_after > 0 and restored_status == 'alarm':
+        _ok("После возврата к норме скважина осталась в 'alarm' (не чинится сама), "
+            f"активных алертов: {active_after}")
     else:
-        _fail(f"После возврата к норме: активных алертов {active_after}, статус '{restored_status}'")
+        _fail(f"БАГ: после возврата к норме скважина сама починилась: "
+              f"активных алертов {active_after}, статус '{restored_status}'")
+        ok = False
+
+    # Ручной "ремонт" (эмуляция POST /api/wells/{id}/repair/) должен вернуть online
+    well.status = Well.Status.ONLINE
+    well.save(update_fields=['status'])
+    Alert.objects.filter(well=well, is_active=True).update(
+        is_active=False, resolved_at=timezone.now()
+    )
+    active_manual = Alert.objects.filter(well=well, is_active=True).count()
+    if active_manual == 0 and well.status == 'online':
+        _ok("После ручного repair: статус 'online', активных алертов 0")
+    else:
+        _fail(f"Ручной repair не сработал: алертов {active_manual}, статус '{well.status}'")
         ok = False
 
     return ok

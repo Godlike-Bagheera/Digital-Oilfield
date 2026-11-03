@@ -81,6 +81,34 @@ class WellViewSet(ModelViewSet):
         incident_data = get_incident_data(well.id, alert_timestamp)
         return Response(incident_data)
 
+    @action(detail=True, methods=['post'], url_path='repair')
+    def repair(self, request, pk=None):
+        """
+        Завершить ремонт скважины (ручной перезапуск оператором).
+        Переводит скважину из статуса alarm/maintenance в online
+        и закрывает все активные алерты этой скважины.
+        КРИТИЧЕСКИЙ БИЗНЕС-БАГ (исправлен): раньше скважина "чинилась" сама —
+        теперь только через этот эндпоинт или action в админке.
+        """
+        well = self.get_object()
+
+        # 1. Меняем статус на online
+        well.status = Well.Status.ONLINE
+        well.save(update_fields=['status'])
+
+        # 2. Закрываем все активные алерты этой скважины
+        closed_count = Alert.objects.filter(
+            well=well,
+            is_active=True,
+        ).update(is_active=False, resolved_at=timezone.now())
+
+        return Response({
+            'status': 'success',
+            'message': f'Скважина №{well.number} перезапущена после ремонта',
+            'closed_alerts': closed_count,
+            'new_status': well.status,
+        })
+
     @action(detail=False, methods=['post'], url_path='export/telemetry')
     def export_telemetry(self, request):
         """Экспорт телеметрии в Excel"""

@@ -31,8 +31,15 @@ WARNING_RULES = [
     ('water_cut', lambda v: v > 90, 90, 'Рост обводнённости продукции'),
 ]
 
-# Худший случай побеждает: alarm > critical(warning-статус) > online
-_STATUS_PRIORITY = {'offline': 0, 'alarm': 3, 'warning': 2, 'online': 1}
+# Худший случай побеждает: alarm/maintenance > warning > online
+# maintenance (в ремонте) по приоритету равен alarm — скважина стоит до ручного перезапуска
+_STATUS_PRIORITY = {
+    'offline': 0,
+    'alarm': 3,
+    'maintenance': 3,
+    'warning': 2,
+    'online': 1,
+}
 
 
 def check_and_create_alerts(well, telemetry_data):
@@ -72,13 +79,27 @@ def check_and_create_alerts(well, telemetry_data):
     _check(WARNING_RULES, 'warning')
 
     if triggered_severity is None:
-        # Все параметры в норме — закрываем активные алерты
-        active = Alert.objects.filter(well=well, is_active=True)
-        if active.exists():
-            active.update(is_active=False, resolved_at=timezone.now())
-        new_status = 'online'
+        # АВТОМАТИЧЕСКОЕ закрытие алертов ТОЛЬКО если скважина НЕ в аварии/ремонте.
+        # КРИТИЧЕСКИЙ БИЗНЕС-БАГ (исправлен): в реальности скважина с обрывом штанг
+        # уходит в ремонт и стоит, пока оператор вручную не нажмёт "Завершить ремонт"
+        # (через POST /api/wells/{id}/repair/ или action в админке).
+        # Если скважина уже в alarm/maintenance — она остаётся в этом статусе,
+        # даже если телеметрия "вернулась в норму".
+        if well.status not in [Well.Status.ALARM, Well.Status.MAINTENANCE]:
+            active = Alert.objects.filter(well=well, is_active=True)
+            if active.exists():
+                active.update(is_active=False, resolved_at=timezone.now())
+            new_status = 'online'
+        else:
+            # Статусы из _STATUS_PRIORITY равны (3 >= 3), поэтому ниже ничего не изменится
+            new_status = well.status
     else:
         new_status = 'alarm' if triggered_severity == 'critical' else 'warning'
+        # КРИТИЧЕСКИЙ БИЗНЕС-БАГ (защита): скважина, уже стоящая в ремонте (maintenance),
+        # НЕ должна "спонтанно" перевестись в alarm из-за новых данных — ремонт всё равно
+        # завершается только вручную оператором. Для online/warning работает worst case wins.
+        if well.status == Well.Status.MAINTENANCE:
+            new_status = well.status
 
     # Обновляем статус скважины (не трогаем offline вручную установленный? worst case wins)
     current_priority = _STATUS_PRIORITY.get(well.status, 0)
