@@ -65,7 +65,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         once = options.get('once', False)
         continuous = options.get('continuous', False)
-        with_anomalies = options.get('with-anomalies', False)
+        with_anomalies = options.get('with_anomalies', False)
 
         if not once and not continuous:
             once = True  # поведение по умолчанию
