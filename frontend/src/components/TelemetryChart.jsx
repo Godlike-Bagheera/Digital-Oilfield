@@ -29,6 +29,8 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
   useEffect(() => {
     if (!showTip) return;
     const handler = (e) => {
+      // не закрывать при клике по самой кнопке "?" (кнопка ререндерится и вылетает из DOM)
+      if (e.target && e.target.closest && e.target.closest('button[aria-label="Подсказка"]')) return;
       if (tipRef.current && !tipRef.current.contains(e.target)) setShowTip(false);
     };
     document.addEventListener('mousedown', handler);
@@ -57,8 +59,8 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
           <button
             type="button"
             aria-label="Подсказка"
-            onMouseEnter={() => setShowTip(true)}
-            onMouseLeave={() => setShowTip(false)}
+            onMouseEnter={() => { if (window.matchMedia('(hover: hover)').matches) setShowTip(true); }}
+            onMouseLeave={() => { if (window.matchMedia('(hover: hover)').matches) setShowTip(false); }}
             onClick={() => setShowTip((v) => !v)}
  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500 font-bold text-white transition hover:bg-blue-600"
           >
@@ -76,7 +78,7 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
       {trainingMode && trainingTip && showTip && (
         <div
           ref={tipRef}
- className="absolute right-3 top-16 z-50 w-72 rounded-lg border border-blue-200 p-4 shadow-2xl border-blue-800 bg-gray-700"
+ className="absolute right-3 top-16 z-50 w-72 rounded-xl border border-blue-500/30 bg-gray-700/80 backdrop-blur-sm p-4 shadow-xl"
         >
  <p className="mb-2 text-sm font-bold text-white">{trainingTip.title}</p>
  <p className="mb-2 text-xs text-gray-200">

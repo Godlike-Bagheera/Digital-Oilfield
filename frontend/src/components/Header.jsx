@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { ThemeContext } from '../contexts/ThemeContext';
 
 export default function Header() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -35,6 +37,13 @@ export default function Header() {
                 {time.toLocaleTimeString('ru-RU')}
               </span>
             </div>
+            <button
+              onClick={toggleTheme}
+              className="w-10 h-10 rounded-full bg-gray-700/50 flex items-center justify-center hover:bg-gray-600/50 transition-colors text-lg"
+              aria-label="Переключить тему"
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
           </div>
         </div>
       </div>

@@ -80,11 +80,17 @@ export default function WellDetail() {
     }
   }, []);
 
-  // Монтирование / смена id скважины + автообновление каждые 3 секунды
+  // Монтирование / смена id скважины
   useEffect(() => {
     setLoading(true);
     fetchWell(id);
     fetchTrainingTips();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // Автообновление данных каждые 3 секунды (зависит от id И period)
+  useEffect(() => {
+    if (!id) return;
     const interval = setInterval(() => {
       fetchTelemetry(id, period);
       fetchAlerts(id);
@@ -92,9 +98,9 @@ export default function WellDetail() {
     }, 3000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, period]);
 
-  // Смена периода
+  // Мгновенное обновление при смене периода
   useEffect(() => {
     if (well) fetchTelemetry(well.id, period);
     // eslint-disable-next-line react-hooks/exhaustive-deps

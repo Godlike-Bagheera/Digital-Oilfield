@@ -1,4 +1,5 @@
 import React from 'react';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -6,6 +7,7 @@ import WellDetail from './pages/WellDetail.jsx';
 
 export default function App() {
   return (
+    <ThemeProvider>
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 text-gray-100">
       {/* Фиксированная шапка на всех страницах */}
       <Header />
@@ -24,5 +26,6 @@ export default function App() {
         Digital Oilfield — веб-дашборд мониторинга телеметрии скважин
       </footer>
     </div>
+    </ThemeProvider>
   );
 }
