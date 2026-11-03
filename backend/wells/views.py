@@ -83,9 +83,16 @@ class WellViewSet(ModelViewSet):
         return Response(incident_data)
 
     # FIX 403 Forbidden: явно разрешаем любой доступ к ручке ремонта.
-    # permission_classes=[AllowAny] на @action переопределяет глобальные
-    # настройки DRF и позволяет кнопке "Завершить ремонт" работать без логина.
-    @action(detail=True, methods=['post'], url_path='repair', permission_classes=[AllowAny])
+    # permission_classes=[AllowAny] переопределяет глобальные настройки DRF,
+    # а authentication_classes=[] отключает SessionAuthentication (CSRF),
+    # что позволяет кнопке "Завершить ремонт" работать без токена.
+    @action(
+        detail=True,
+        methods=['post'],
+        url_path='repair',
+        permission_classes=[AllowAny],
+        authentication_classes=[],
+    )
     def repair(self, request, pk=None):
         """
         Завершить ремонт скважины (ручной перезапуск оператором).
