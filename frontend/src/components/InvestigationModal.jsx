@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  ReferenceArea,
   Area,
   AreaChart,
 } from 'recharts';
@@ -33,14 +34,16 @@ const formatTime = (iso) => {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
-/* Кастомный Tooltip с информацией об аномалиях */
+/* Кастомный Tooltip с информацией об аномалиях (событиях-интервалах) */
 const AnomalyTooltip = ({ active, payload, anomalies, paramKey }) => {
   if (!active || !payload || !payload.length) return null;
   const point = payload[0];
   const ts = point.payload?.timestampFull || point.payload?.timestamp;
-  const pointAnomalies = (anomalies || []).filter(
-    (a) => a.timestamp === ts && a.parameter === paramKey
-  );
+  // Точка попадает в событие, если её timestamp внутри интервала [start_time, end_time]
+  const pointAnomalies = (anomalies || []).filter((a) => {
+    if (a.parameter !== paramKey || !a.start_time || !a.end_time) return false;
+    return new Date(ts) >= new Date(a.start_time) && new Date(ts) <= new Date(a.end_time);
+  });
   return (
  <div className="max-w-xs rounded-lg border border-zinc-800 bg-[#18181b] p-3 text-sm shadow-xl">
  <p className="text-zinc-400 mb-1">{formatTime(ts)}</p>
@@ -114,11 +117,20 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
 
   const anomalies = data?.anomalies || [];
 
-  // Отметки anomaly timestamps по выбранному параметру — для ReferenceLine
-  const anomalyTimestamps = useMemo(
-    () => [...new Set(anomalies.filter((a) => a.parameter === selectedParam).map((a) => a.timestamp))],
+  // События-интервалы аномалий по выбранному параметру (для ReferenceArea)
+  const anomalyEvents = useMemo(
+    () => anomalies.filter((a) => a.parameter === selectedParam),
     [anomalies, selectedParam]
   );
+  // Быстрый lookup: timestamp точки -> событие (для подсветки точек на графике)
+  const eventByTs = useMemo(() => {
+    const map = {};
+    anomalyEvents.forEach((ev) => {
+      map[ev.start_time] = ev;
+      map[ev.end_time] = ev;
+    });
+    return map;
+  }, [anomalyEvents]);
 
   const chartData = useMemo(() => {
     if (!data?.telemetry_24h) return [];
@@ -212,7 +224,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
               </h3>
  <div className="flex flex-wrap gap-2">
                 {PARAM_OPTIONS.map((p) => {
-                  const anomalyCount = anomalies.filter((a) => a.parameter === p.key).length;
+                  const eventCount = anomalies.filter((a) => a.parameter === p.key).length;
                   return (
                     <button
                       key={p.key}
@@ -224,9 +236,9 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                       }`}
                     >
                       {p.label}
-                      {anomalyCount > 0 && (
+                      {eventCount > 0 && (
  <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center">
-                          {anomalyCount}
+                          {eventCount}
                         </span>
                       )}
                     </button>
@@ -242,8 +254,8 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                   📈 {currentOption?.label} — последние 24 часа
                 </h3>
  <span className="text-sm text-red-400">
-                  {anomalyTimestamps.length > 0
-                    ? `⚠️ Аномалий: ${anomalyTimestamps.length} (красные пунктирные линии)`
+                  {anomalyEvents.length > 0
+                    ? `⚠️ Событий аномалий: ${anomalyEvents.length} (красные зоны)`
                     : 'Аномалий по параметру не обнаружено'}
                 </span>
               </div>
@@ -261,19 +273,23 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                   <Tooltip
                     content={<AnomalyTooltip anomalies={anomalies} paramKey={selectedParam} />}
                   />
-                  {/* Красные пунктирные ReferenceLine на местах аномалий */}
-                  {anomalyTimestamps.map((ts, idx) => (
-                    <ReferenceLine
-                      key={`${ts}-${idx}`}
-                      x={ts}
+                  {/* Красные ЗОНЫ (ReferenceArea) для событий-интервалов аномалий.
+                      Одна зона = одно событие вместо 300 ReferenceLine — резает число
+                      компонентов Recharts с сотен до единиц и убирает лаги модалки. */}
+                  {anomalyEvents.map((ev, idx) => (
+                    <ReferenceArea
+                      key={`${ev.start_time}-${idx}`}
+                      x1={ev.start_time}
+                      x2={ev.end_time === ev.start_time ? ev.start_time : ev.end_time}
+                      fill="#ef4444"
+                      fillOpacity={0.2}
                       stroke="#ef4444"
-                      strokeDasharray="5 5"
-                      strokeWidth={2}
+                      strokeOpacity={0.3}
                       label={{
-                        value: '⚠️',
-                        position: 'top',
+                        value: `Аномалия ${ev.duration_minutes}мин`,
+                        position: 'insideTopRight',
                         fill: '#ef4444',
-                        fontSize: 14,
+                        fontSize: 10,
                       }}
                     />
                   ))}
@@ -284,8 +300,9 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                     strokeWidth={2}
                     dot={(props) => {
                       const { cx, cy, payload, index } = props;
-                      const isAnomaly = anomalyTimestamps.includes(payload.timestampFull);
-                      if (isAnomaly) {
+                      // Подсветка только границ событий (не 300 точек)
+                      const ev = eventByTs[payload.timestampFull];
+                      if (ev) {
                         return (
                           <circle
                             key={`anom-${index}`}
@@ -357,42 +374,39 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
               </ResponsiveContainer>
             </div>
 
-            {/* Сводка по аномалиям */}
+            {/* Сводка по событиям-аномалиям (интервалы, а не 300 точек) */}
  <div className="mb-6">
  <h3 className="font-bold mb-2">
-                ⚠️ Обнаруженные аномалии (|z| &gt; 2): {anomalies.length}
+                ⚠️ Обнаруженные события аномалий (|z| &gt; 2): {anomalies.length}
               </h3>
-              {anomalies.length > 0 ? (
+              {anomalyEvents.length > 0 ? (
  <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {anomalies.slice(0, 20).map((anomaly, idx) => (
+                  {anomalyEvents.map((ev, idx) => (
                     <div
                       key={idx}
  className="p-2 bg-yellow-900/40 border border-yellow-800 rounded text-sm flex justify-between items-center"
                     >
                       <span>
-                        <strong>{anomaly.parameter}</strong>: {anomaly.value.toFixed(2)}
+                        <strong>{PARAM_OPTIONS.find((p) => p.key === ev.parameter)?.label || ev.parameter}</strong>: {' '}
+                        от {formatTime(ev.start_time)} до {formatTime(ev.end_time)} ({ev.duration_minutes} мин),
+                        значения {Number(ev.min_value).toFixed(2)}–{Number(ev.max_value).toFixed(2)},
+                        точек: {ev.count}
  <span className="text-zinc-400 ml-2">
-                          (среднее: {anomaly.mean.toFixed(2)}, СКО: {anomaly.std.toFixed(2)})
+                          (среднее: {ev.mean.toFixed(2)}, СКО: {ev.std.toFixed(2)})
                         </span>
                       </span>
- <span className="flex items-center gap-3">
- <span className="text-xs text-zinc-400">{formatTime(anomaly.timestamp)}</span>
-                        <span
+ <span
  className={`font-mono text-xs px-2 py-0.5 rounded ${
-                            anomaly.z_score > 3 ? 'bg-red-600 text-white' : 'bg-yellow-600 text-black'
-                          }`}
-                        >
-                          z={anomaly.z_score.toFixed(2)}
-                        </span>
+                          ev.z_score_max > 3 ? 'bg-red-600 text-white' : 'bg-yellow-600 text-black'
+                        }`}
+ >
+                        z={ev.z_score_max.toFixed(2)}
                       </span>
                     </div>
                   ))}
-                  {anomalies.length > 20 && (
- <p className="text-sm text-zinc-400">... и ещё {anomalies.length - 20} аномалий</p>
-                  )}
                 </div>
               ) : (
- <p className="text-zinc-400">Аномалий не обнаружено</p>
+ <p className="text-zinc-400">Аномалий по выбранному параметру не обнаружено</p>
               )}
             </div>
 
