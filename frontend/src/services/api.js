@@ -7,10 +7,10 @@ const api = axios.create({
   },
 });
 
-// Получить список скважин
+// Получить список скважин (с учётом пагинации DRF)
 export const getWells = async (params = {}) => {
   const response = await api.get('/wells/', { params });
-  return response.data;
+  return response.data; // { count, results, ... }
 };
 
 // Получить данные одной скважины
@@ -25,10 +25,16 @@ export const getTelemetry = async (wellId, params = {}) => {
   return response.data;
 };
 
-// Получить список алертов
+// Получить список алертов (с фильтрами, например { is_active: 'true' })
 export const getAlerts = async (params = {}) => {
   const response = await api.get('/alerts/', { params });
-  return response.data;
+  return response.data; // { count, results, ... }
+};
+
+// Получить обучающие подсказки
+export const getTrainingTips = async (params = {}) => {
+  const response = await api.get('/training-tips/', { params });
+  return response.data; // { count, results, ... }
 };
 
 export default api;
