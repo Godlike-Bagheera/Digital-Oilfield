@@ -1,0 +1,134 @@
+"""
+Management command: симулятор телеметрии скважин.
+
+Генерирует реалистичные данные телеметрии (плавные отклонения от
+предыдущих значений), рассчитывает индекс здоровья, проверяет пороги
+и создаёт алерты.
+
+Примеры:
+    python manage.py simulate_telemetry --once
+    python manage.py simulate_telemetry --continuous --with-anomalies
+"""
+
+import random
+import time
+
+from django.core.management.base import BaseCommand
+
+from wells.models import TelemetryData, Well
+from wells.services.alert_generator import check_and_create_alerts
+from wells.services.health_calculator import calculate_health_index
+
+# Базовые значения и амплитуда случайного блуждания
+BASE_VALUES = {
+    'current':            {'base': 45.0,  'step': 5.0},
+    'casing_pressure':    {'base': 6.0,   'step': 1.0},
+    'discharge_pressure': {'base': 12.0,  'step': 2.0},
+    'temperature':        {'base': 50.0,  'step': 5.0},
+    'flow_rate_liquid':   {'base': 80.0,  'step': 10.0},
+    'flow_rate_oil':      {'base': 30.0,  'step': 5.0},
+    'water_cut':          {'base': 60.0,  'step': 5.0},
+    'stroke_rate':        {'base': 8.0,   'step': 1.0},
+}
+
+# Аномалии: name -> dict изменений параметров
+ANOMALIES = {
+    'Обрыв штанг':        {'current': 0.0, 'flow_rate_oil': 0.0},
+    'Перегрев':           {'temperature': 97.0},
+    'Падение дебита':     {'flow_rate_oil': 2.0},
+    'Рост обводнённости': {'water_cut': 98.0},
+}
+
+
+def _next_value(previous, cfg):
+    """Следующее значение — небольшое случайное отклонение от предыдущего."""
+    if previous is None:
+        return round(cfg['base'] + random.uniform(-cfg['step'], cfg['step']), 2)
+    delta = random.gauss(0, cfg['step'] * 0.3)
+    # Возврат к базовому значению (mean reversion), чтобы не было дрейфа
+    pull = (cfg['base'] - previous) * 0.1
+    value = previous + delta + pull
+    return round(max(0.0, value), 2)
+
+
+class Command(BaseCommand):
+    help = 'Симулятор телеметрии: генерация данных, расчёт health index, алерты'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--once', action='store_true',
+                          help='Сгенерировать данные один раз для всех скважин и выйти')
+        parser.add_argument('--continuous', action='store_true',
+                          help='Непрерывный режим: генерация каждые 5 секунд')
+        parser.add_argument('--with-anomalies', action='store_true',
+                          help='С вероятностью 5%% генерировать аномалии')
+
+    def handle(self, *args, **options):
+        once = options.get('once', False)
+        continuous = options.get('continuous', False)
+        with_anomalies = options.get('with-anomalies', False)
+
+        if not once and not continuous:
+            once = True  # поведение по умолчанию
+
+        self.stdout.write(self.style.SUCCESS(
+            f'Симулятор телеметрии запущен (режим: '
+            f'{"continuous" if continuous else "once"}, '
+            f'аномалии: {"вкл" if with_anomalies else "выкл"})'
+        ))
+
+        try:
+            while True:
+                self._generate_cycle(with_anomalies)
+                if once or not continuous:
+                    break
+                time.sleep(5)
+        except KeyboardInterrupt:
+            self.stdout.write(self.style.WARNING('\nСимулятор остановлен (Ctrl+C)'))
+
+    def _generate_cycle(self, with_anomalies):
+        wells = Well.objects.filter(is_active=True)
+        if not wells.exists():
+            self.stdout.write(self.style.ERROR(
+                'Нет активных скважин. Запустите: python manage.py create_test_data'))
+            return
+
+        for well in wells:
+            last = TelemetryData.objects.filter(well=well).order_by('-timestamp').first()
+
+            data = {}
+            for param, cfg in BASE_VALUES.items():
+                prev = getattr(last, param, None) if last else None
+                data[param] = _next_value(prev, cfg)
+
+            anomaly_name = None
+            if with_anomalies and random.random() < 0.05:
+                anomaly_name, changes = random.choice(list(ANOMALIES.items()))
+                data.update(changes)
+
+            health = calculate_health_index(data)
+
+            record = TelemetryData.objects.create(
+                well=well,
+                current=data['current'],
+                casing_pressure=data['casing_pressure'],
+                discharge_pressure=data['discharge_pressure'],
+                temperature=data['temperature'],
+                flow_rate_liquid=data['flow_rate_liquid'],
+                flow_rate_oil=data['flow_rate_oil'],
+                water_cut=data['water_cut'],
+                stroke_rate=data['stroke_rate'],
+                health_index=health['health_index'],
+            )
+
+            alerts, status = check_and_create_alerts(well, data)
+
+            msg = (f'Скважина №{well.number}: HI={health["health_index"]} '
+                   f'({health["status"]}), статус={status}')
+            if anomaly_name:
+                msg += f' [АНОМАЛИЯ: {anomaly_name}]'
+            if alerts:
+                msg += f', создано алертов: {len(alerts)}'
+            self.stdout.write(msg)
+
+        self.stdout.write(self.style.SUCCESS(
+            f'Цикл завершён: записей телеметрии всего — {TelemetryData.objects.count()}'))
