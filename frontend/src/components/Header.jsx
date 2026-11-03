@@ -10,28 +10,28 @@ export default function Header() {
   }, []);
 
   return (
- <header className="fixed top-0 left-0 right-0 bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 z-50 shadow-2xl">
- <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
- <div className="flex items-center justify-between h-16">
- <Link to="/" className="flex items-center gap-3 group">
- <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-cyan-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
- <span className="text-white font-bold text-lg">ЦМ</span>
+    <header className="fixed top-0 left-0 right-0 glass z-50 border-b border-slate-700/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-cyan-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
+              <span className="text-white font-bold text-lg">ЦМ</span>
             </div>
             <div>
- <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-lg font-bold gradient-text">
                 Цифровое месторождение
               </h1>
- <p className="text-xs text-slate-400">Мониторинг в реальном времени</p>
+              <p className="text-xs text-slate-400">Мониторинг в реальном времени</p>
             </div>
           </Link>
 
- <div className="flex items-center gap-4">
- <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700/50">
- <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
- <span className="text-sm text-slate-300">Система активна</span>
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 glass rounded-lg">
+              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+              <span className="text-sm text-slate-300">Система активна</span>
             </div>
- <div className="px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700/50">
- <span className="text-sm font-mono text-cyan-400">
+            <div className="px-4 py-2 glass rounded-lg">
+              <span className="text-sm font-mono text-cyan-400">
                 {time.toLocaleTimeString('ru-RU')}
               </span>
             </div>

@@ -106,12 +106,12 @@ export default function Dashboard() {
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: 'Всего скважин', value: wells.length, color: 'from-blue-500 to-cyan-500', icon: '🏭', glow: 'shadow-blue-500/30' },
-          { label: 'В норме', value: normalCount, color: 'from-green-500 to-emerald-500', icon: '✅', glow: 'shadow-green-500/30' },
-          { label: 'Внимание', value: warningCount, color: 'from-yellow-500 to-amber-500', icon: '⚠️', glow: 'shadow-yellow-500/30' },
-          { label: 'Аварийные', value: alarmCount, color: 'from-red-500 to-rose-500', icon: '🚨', glow: 'shadow-red-500/30' }
+          { label: 'В норме', value: normalCount, color: 'from-emerald-500 to-green-500', icon: '✅', glow: 'shadow-emerald-500/30' },
+          { label: 'Внимание', value: warningCount, color: 'from-amber-500 to-yellow-500', icon: '⚠️', glow: 'shadow-amber-500/30' },
+          { label: 'Аварийные', value: alarmCount, color: 'from-rose-500 to-red-500', icon: '🚨', glow: 'shadow-rose-500/30' }
         ].map((stat, idx) => (
- <div key={idx} className={`relative bg-gradient-to-br ${stat.color} rounded-2xl p-6 shadow-xl ${stat.glow} overflow-hidden group hover:scale-105 transition-transform`}>
- <div className="absolute -top-4 -right-4 text-6xl opacity-20 group-hover:opacity-40 transition-opacity">{stat.icon}</div>
+ <div key={idx} className={`relative bg-gradient-to-br ${stat.color} rounded-2xl p-6 shadow-xl ${stat.glow} overflow-hidden group hover:scale-105 transition-all duration-300 animate-fade-in`} style={{animationDelay: `${idx * 0.1}s`}}>
+ <div className="absolute -top-4 -right-4 text-6xl opacity-20 group-hover:opacity-40 transition-opacity duration-300">{stat.icon}</div>
  <div className="relative z-10">
  <p className="text-white/80 text-sm font-medium mb-1">{stat.label}</p>
  <p className="text-white text-4xl font-bold">{stat.value}</p>

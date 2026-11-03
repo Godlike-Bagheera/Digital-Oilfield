@@ -46,7 +46,7 @@ export default function WellDetail() {
 
   const fetchAlerts = useCallback(async (wellId) => {
     try {
-      const data = await api.getAlerts({ well: wellId, is_active: 'true' });
+      const data = await api.getAlerts({ well: wellId });
       setAlerts(Array.isArray(data) ? data : data.results || []);
     } catch (e) {
       console.error('Ошибка загрузки алертов:', e);
@@ -296,10 +296,14 @@ export default function WellDetail() {
                 role="switch"
                 aria-checked={trainingMode}
                 onClick={() => setTrainingMode((v) => !v)}
- className={`relative h-7 w-12 rounded-full transition-colors ${trainingMode ? 'bg-blue-600' : 'bg-gray-600'}`}
+ className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  trainingMode ? 'bg-blue-600' : 'bg-gray-600'
+                }`}
               >
                 <span
- className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`}
+ className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    trainingMode ? 'translate-x-6' : 'translate-x-1'
+                  }`}
                 />
               </button>
             </label>
