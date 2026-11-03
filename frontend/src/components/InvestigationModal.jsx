@@ -285,12 +285,17 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                       fillOpacity={0.2}
                       stroke="#ef4444"
                       strokeOpacity={0.3}
-                      label={{
-                        value: `Аномалия ${ev.duration_minutes}мин`,
-                        position: 'insideTopRight',
-                        fill: '#ef4444',
-                        fontSize: 10,
-                      }}
+                      label={
+                        ev.duration_minutes >= 1
+                          ? {
+                              value: `Аномалия ${Math.round(ev.duration_minutes)}м`,
+                              position: 'insideTop',
+                              fill: '#ef4444',
+                              fontSize: 10,
+                              fontWeight: 'bold',
+                            }
+                          : undefined
+                      }
                     />
                   ))}
                   <Line

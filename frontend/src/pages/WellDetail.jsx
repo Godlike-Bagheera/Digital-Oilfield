@@ -32,6 +32,9 @@ export default function WellDetail() {
   const [predictions, setPredictions] = useState([]);
   // Выбранный алерт для модалки расследования (null — модалка закрыта)
   const [selectedAlert, setSelectedAlert] = useState(null);
+  // Фильтрация и пагинация алертов: 'active' | 'history'
+  const [alertFilter, setAlertFilter] = useState('active');
+  const [visibleAlertsCount, setVisibleAlertsCount] = useState(5);
 
   const fetchTelemetry = useCallback(async (wellId, prd) => {
     try {
@@ -314,6 +317,12 @@ export default function WellDetail() {
     { title: 'Число качаний', unit: 'кач/мин', color: '#ec4899', icon: '⚙️', key: 'stroke_rate', tip: null },
   ];
 
+  // Фильтрация алертов по табам и пагинация (5 записей + «Показать ещё»)
+  const filteredAlerts = alerts.filter((a) =>
+    alertFilter === 'active' ? a.is_active : true
+  );
+  const displayedAlerts = filteredAlerts.slice(0, visibleAlertsCount);
+
   return (
     <div className="animate-fade-in mx-auto max-w-7xl">
       {/* Хлебные крошки */}
@@ -414,11 +423,45 @@ export default function WellDetail() {
         ))}
       </div>
 
-      {/* Активные алерты */}
+      {/* Алерты: активные / история + пагинация */}
  <section className="mb-8">
- <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Активные алерты</h2>
+ <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Алерты</h2>
+        {/* Табы: Активные / Вся история */}
+        <div className="mb-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => { setAlertFilter('active'); setVisibleAlertsCount(5); }}
+            className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+              alertFilter === 'active'
+                ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
+                : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+          >
+            Активные ({alerts.filter((a) => a.is_active).length})
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAlertFilter('history'); setVisibleAlertsCount(5); }}
+            className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+              alertFilter === 'history'
+                ? 'border-blue-500/30 bg-blue-500/20 text-blue-400'
+                : 'border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
+            }`}
+          >
+            Вся история ({alerts.length})
+          </button>
+        </div>
         {/* Клик по «Расследовать» в списке алертов открывает модалку с данными этого алерта */}
-        <AlertList alerts={alerts} onInvestigate={(alert) => setSelectedAlert(alert)} />
+        <AlertList alerts={displayedAlerts} onInvestigate={(alert) => setSelectedAlert(alert)} />
+        {filteredAlerts.length > visibleAlertsCount && (
+          <button
+            type="button"
+            onClick={() => setVisibleAlertsCount((v) => v + 5)}
+            className="mt-4 w-full rounded-lg border border-zinc-700/50 bg-zinc-800/50 py-2.5 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800"
+          >
+            Показать еще ({filteredAlerts.length - visibleAlertsCount} скрыто)
+          </button>
+        )}
       </section>
 
       {/* Действия */}
