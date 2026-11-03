@@ -10,9 +10,9 @@ const PredictiveAlert = ({ prediction }) => {
     };
 
     const confidenceColors = {
-        high: 'bg-red-600',
-        medium: 'bg-orange-600',
-        low: 'bg-yellow-600'
+        high: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',
+        medium: 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
+        low: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
     };
 
     const confidenceLabels = {
@@ -22,9 +22,9 @@ const PredictiveAlert = ({ prediction }) => {
     };
 
     const trendIcons = {
-        up: '📈',
-        down: '📉',
-        stable: '➡️'
+        up: '↗',
+        down: '↘',
+        stable: '→'
     };
 
     const timeUntilCritical = prediction.estimated_time
@@ -32,36 +32,36 @@ const PredictiveAlert = ({ prediction }) => {
         : null;
 
     return (
- <div className="mb-4 rounded-lg border-2 border-blue-500 bg-blue-900/60 p-4 text-blue-100 transition-colors">
+ <div className="mb-4 rounded-xl border border-blue-500/20 bg-blue-500/10 p-5 text-blue-300 shadow-lg ring-1 ring-white/5 backdrop-blur-md transition-colors">
  <div className="flex items-center justify-between mb-2">
  <div className="flex items-center gap-2">
- <span className="text-2xl">🔮</span>
- <h3 className="text-lg font-bold text-blue-200">Прогноз аварии</h3>
+ <span className="text-lg text-blue-400">◆</span>
+ <h3 className="text-base font-semibold tracking-tight text-zinc-50">Прогноз аварии</h3>
                 </div>
- <span className={`px-3 py-1 rounded-full text-sm ${confidenceColors[prediction.confidence]}`}>
+ <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${confidenceColors[prediction.confidence]}`}>
                     Уверенность: {confidenceLabels[prediction.confidence]}
                 </span>
             </div>
 
- <div className="text-blue-100 mb-2">
+ <div className="mb-2 text-sm font-medium text-zinc-200">
                 <strong>{parameterNames[prediction.parameter]}</strong> {trendIcons[prediction.current_trend]}
             </div>
 
- <div className="text-sm text-blue-300 mb-3">
+ <div className="mb-3 text-sm text-blue-400">
                 Прогнозируемое значение: {prediction.predicted_value.toFixed(2)}
             </div>
 
             {timeUntilCritical && timeUntilCritical > 0 && (
- <div className="text-yellow-300 font-semibold mb-3">
-                    ⏱️ Критическое значение через ~{timeUntilCritical} минут
+ <div className="mb-3 text-sm font-semibold text-amber-400">
+                    Критическое значение через ~{timeUntilCritical} минут
                 </div>
             )}
 
             <button
                 onClick={() => console.log('Prevent action for', prediction.parameter)}
- className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
+ className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
             >
-                🛡️ Предотвратить
+                Предотвратить
             </button>
         </div>
     );

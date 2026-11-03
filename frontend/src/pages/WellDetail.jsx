@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import TelemetryChart from '../components/TelemetryChart';
 import AlertList from '../components/AlertList';
 import PeriodSelector from '../components/PeriodSelector';
@@ -10,10 +10,10 @@ import { checkAllPredictions } from '../utils/predictions';
 import * as api from '../services/api';
 
 const STATUS_BADGE = {
-  online: { text: 'Онлайн', cls: 'bg-green-500/20 text-green-400 border-green-500' },
-  warning: { text: 'Внимание', cls: 'bg-yellow-500/20 text-yellow-400 border-yellow-500' },
-  alarm: { text: 'Авария', cls: 'bg-red-500/20 text-red-400 border-red-500 animate-pulse-slow' },
-  offline: { text: 'Офлайн', cls: 'bg-gray-500/20 text-gray-400 border-gray-500' },
+  online: { text: 'Онлайн', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+  warning: { text: 'Внимание', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+  alarm: { text: 'Авария', cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20 animate-pulse-alert' },
+  offline: { text: 'Офлайн', cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' },
 };
 
 export default function WellDetail() {
@@ -110,19 +110,19 @@ export default function WellDetail() {
     return (
  <div className="animate-fade-in">
         {/* Skeleton шапки */}
- <div className="mb-6 flex items-center justify-between rounded-2xl p-6 shadow-lg bg-gray-800/50">
+ <div className="mb-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
  <div className="space-y-3">
- <div className="h-8 w-48 animate-pulse rounded-lg bg-gray-700" />
- <div className="h-4 w-64 animate-pulse rounded bg-gray-700" />
+ <div className="h-8 w-48 animate-pulse rounded-xl bg-zinc-800" />
+ <div className="h-4 w-64 animate-pulse rounded-xl bg-zinc-800" />
           </div>
- <div className="h-28 w-28 animate-pulse rounded-full bg-gray-700" />
+ <div className="h-28 w-28 animate-pulse rounded-full bg-zinc-800" />
         </div>
         {/* Skeleton графиков */}
  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {[...Array(8)].map((_, i) => (
- <div key={i} className="rounded-2xl p-6 shadow-lg bg-gray-800/50">
- <div className="mb-4 h-6 w-1/3 animate-pulse rounded bg-gray-700" />
- <div className="h-[300px] animate-pulse rounded-xl bg-gray-700" />
+ <div key={i} className="rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
+ <div className="mb-4 h-6 w-1/3 animate-pulse rounded-xl bg-zinc-800" />
+ <div className="h-[300px] animate-pulse rounded-xl bg-zinc-800" />
             </div>
           ))}
         </div>
@@ -132,12 +132,12 @@ export default function WellDetail() {
 
   if (error) {
     return (
- <div className="mx-auto mt-10 max-w-lg rounded-xl border border-red-600 bg-red-900/30 p-6 text-center">
- <p className="mb-4 text-red-300">{error}</p>
+ <div className="mx-auto mt-10 max-w-lg rounded-xl border border-rose-500/20 bg-rose-500/10 p-6 text-center">
+ <p className="mb-4 text-sm text-rose-400">{error}</p>
         <button
           type="button"
           onClick={() => { setLoading(true); fetchWell(id); }}
- className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+ className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-500"
         >
           Повторить
         </button>
@@ -147,9 +147,9 @@ export default function WellDetail() {
 
   if (!well) {
     return (
- <div className="mt-10 text-center text-gray-400">
+ <div className="mt-10 text-center text-zinc-400">
  <p className="mb-4 text-xl">Скважина не найдена</p>
- <button type="button" onClick={() => navigate('/')} className="text-blue-400 hover:underline">
+ <button type="button" onClick={() => navigate('/')} className="text-blue-400 underline-offset-4 hover:underline">
           ← Назад к списку
         </button>
       </div>
@@ -264,50 +264,58 @@ export default function WellDetail() {
     { title: 'Давление нагнетательное', unit: 'МПа', color: '#f97316', icon: '📈', key: 'discharge_pressure', tip: null },
     { title: 'Температура', unit: '°C', color: '#eab308', icon: '🌡️', key: 'temperature', tip: 'temperature' },
     { title: 'Дебит жидкости', unit: 'м³/сут', color: '#8b5cf6', icon: '💧', key: 'flow_rate_liquid', tip: null },
-    { title: 'Дебит нефти', unit: 'т/сут', color: '#22c55e', icon: '🛢️', key: 'flow_rate_oil', tip: 'flow_rate_oil' },
+    { title: 'Дебит нефти', unit: 'т/сут', color: '#22c55e', icon: '●', key: 'flow_rate_oil', tip: 'flow_rate_oil' },
     { title: 'Обводнённость', unit: '%', color: '#06b6d4', icon: '💦', key: 'water_cut', tip: 'water_cut' },
     { title: 'Число качаний', unit: 'кач/мин', color: '#ec4899', icon: '⚙️', key: 'stroke_rate', tip: null },
   ];
 
   return (
-    <div>
-      {/* Шапка страницы */}
- <div className="mb-6">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
- className="mb-4 flex items-center gap-2 text-sm transition-colors hover:text-blue-600 text-gray-400 hover:text-white"
-        >
-          ← Назад к списку
-        </button>
+    <div className="animate-fade-in mx-auto max-w-7xl">
+      {/* Хлебные крошки */}
+      <nav className="mb-6 flex items-center gap-2 text-sm text-zinc-500">
+        <Link to="/" className="transition-colors hover:text-zinc-300">Главная</Link>
+        <span className="text-zinc-700">/</span>
+        <span className="hover:text-zinc-300">{well.cdng}</span>
+        <span className="text-zinc-700">/</span>
+        <span className="font-medium text-zinc-300">Скважина {well.number}</span>
+      </nav>
 
- <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5 shadow-lg transition-colors border-gray-700 bg-gray-800">
+      {/* Шапка страницы */}
+      <div className="mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md">
           <div>
- <h1 className="text-3xl font-bold text-white">Скважина №{well.number}</h1>
- <p className="mt-1 text-gray-500 text-gray-400">
-              {well.cdng} | {well.pump_type_display || well.pump_type} | Введена {well.commission_date}
+            <h1 className="text-4xl font-bold tracking-tight text-zinc-50">
+              Скважина №{well.number}
+            </h1>
+            <p className="mt-2 text-sm text-zinc-400">
+              {well.cdng} · {well.pump_type_display || well.pump_type} · Введена {well.commission_date}
             </p>
- <span className={`mt-3 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${badge.cls}`}>
+            <span className={`mt-3 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              well.status === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+              well.status === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+              well.status === 'alarm' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse-alert' :
+              'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
+            }`}>
               {badge.text}
             </span>
           </div>
 
- <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6">
             {healthIndex !== null && <HealthGauge value={healthIndex} size={120} />}
             {/* Переключатель режима обучения */}
- <label className="flex cursor-pointer select-none items-center gap-3">
- <span className="text-sm text-gray-700 text-gray-300">🎓 Режим обучения</span>
+            <label className="flex cursor-pointer select-none items-center gap-3">
+              <span className="text-sm text-zinc-400">Режим обучения</span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={trainingMode}
                 onClick={() => setTrainingMode((v) => !v)}
- className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  trainingMode ? 'bg-blue-600' : 'bg-gray-600'
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  trainingMode ? 'bg-blue-600' : 'bg-zinc-700'
                 }`}
               >
                 <span
- className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
                     trainingMode ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
@@ -325,7 +333,7 @@ export default function WellDetail() {
       {/* Предиктивные алерты */}
       {predictions.length > 0 && (
  <div className="mb-6">
- <h2 className="mb-4 text-xl font-bold text-white">🔮 Предиктивные алерты</h2>
+ <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-zinc-50"><span className="text-blue-400">◆</span> Предиктивные алерты</h2>
           {predictions.map((pred, idx) => (
             <PredictiveAlert key={idx} prediction={pred} />
           ))}
@@ -351,41 +359,41 @@ export default function WellDetail() {
 
       {/* Активные алерты */}
  <section className="mb-8">
- <h2 className="mb-4 text-xl font-bold text-white">Активные алерты</h2>
+ <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Активные алерты</h2>
         <AlertList alerts={alerts} />
       </section>
 
       {/* Действия */}
  <section className="mb-8">
- <h2 className="mb-4 text-xl font-bold text-white">Действия</h2>
+ <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Действия</h2>
  <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={handleExportTelemetry}
- className="rounded-lg px-4 py-2.5 text-sm font-medium transition-colors bg-gray-700 text-gray-100 hover:bg-gray-600"
+ className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-50"
           >
-            📊 Экспорт в Excel
+            Экспорт в Excel
           </button>
           <button
             type="button"
             onClick={handleExportTelemetryPdf}
- className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+ className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
           >
-            📄 Телеметрия PDF
+            Телеметрия PDF
           </button>
           <button
             type="button"
             onClick={handleExportShiftReport}
- className="rounded-lg px-4 py-2.5 text-sm font-medium transition-colors bg-gray-700 text-gray-100 hover:bg-gray-600"
+ className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-50"
           >
-            📄 Сменный отчёт Excel
+            Сменный отчёт Excel
           </button>
           <button
             type="button"
             onClick={handleExportShiftReportPdf}
- className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-2"
+ className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
           >
-            📄 Сменный отчёт PDF
+            Сменный отчёт PDF
           </button>
           <button
             type="button"
@@ -393,9 +401,9 @@ export default function WellDetail() {
               setSelectedAlertId(alerts.length > 0 ? alerts[0].id : null);
               setInvestigationOpen(true);
             }}
- className="rounded-lg px-4 py-2.5 text-sm font-medium transition-colors bg-gray-700 text-gray-100 hover:bg-gray-600"
+ className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-400 transition-colors hover:bg-amber-500/20"
           >
-            🔍 Расследовать инцидент
+            Расследовать инцидент
           </button>
         </div>
       </section>

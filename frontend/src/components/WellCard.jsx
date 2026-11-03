@@ -24,67 +24,62 @@ const WellCard = ({ well }) => {
   };
 
   return (
-    <Link to={`/well/${well.id}`} className="group relative block animate-fade-in">
-      <div className="relative glass-card rounded-2xl p-6 overflow-hidden h-full">
-        {/* Фоновое свечение */}
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/0 via-blue-500/0 to-purple-500/0 group-hover:from-cyan-500/10 group-hover:via-blue-500/5 group-hover:to-purple-500/10 transition-all duration-500 pointer-events-none"></div>
+    <Link to={`/well/${well.id}`} className="group relative block animate-fade-in-up">
+      <div className="relative h-full overflow-hidden rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:bg-[#16161a] hover:shadow-2xl hover:ring-white/10">
+        {/* Фоновое свечение при наведении */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-emerald-500/0 opacity-0 transition-all duration-500 group-hover:from-blue-500/5 group-hover:to-emerald-500/5 group-hover:opacity-100"></div>
 
         <div className="relative z-10">
           {/* Заголовок */}
-          <div className="flex items-start justify-between mb-4">
+          <div className="mb-4 flex items-start justify-between">
             <div>
-              <h3 className="text-xl font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">
+              <h3 className="text-xl font-semibold tracking-tight text-zinc-50 transition-colors group-hover:text-white">
                 Скважина №{well.number}
               </h3>
-              <p className="text-sm text-slate-400">{well.cdng}</p>
+              <p className="mt-0.5 text-sm text-zinc-400">{well.cdng}</p>
             </div>
-            <div className={`px-3 py-1 bg-gradient-to-r ${status.color} rounded-full text-xs font-semibold text-white shadow-lg ${status.glow}`}>
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              well.status === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+              well.status === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+              well.status === 'alarm' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse-alert' :
+              'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
+            }`}>
               {status.text}
-            </div>
+            </span>
           </div>
 
           {/* Индикатор здоровья */}
-          <div className="flex justify-center my-4">
-            <div className="transform group-hover:scale-110 transition-transform duration-300">
+          <div className="my-4 flex justify-center">
+            <div className="transition-transform duration-300 group-hover:scale-105">
               <HealthGauge value={health} />
             </div>
           </div>
 
           {/* Параметры */}
           {telemetry ? (
-            <div className="space-y-2 mt-4">
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/30 hover:border-cyan-500/30 transition-colors">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">⚡</span>
-                  <span className="text-xs text-slate-400">Ток</span>
-                </div>
-                <span className="font-bold text-cyan-400">{telemetry.current?.toFixed(1)} А</span>
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-3 transition-colors hover:border-zinc-700">
+                <span className="text-xs text-zinc-400">Ток</span>
+                <span className="text-sm font-semibold text-zinc-50">{telemetry.current?.toFixed(1)} А</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/30 hover:border-emerald-500/30 transition-colors">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🛢️</span>
-                  <span className="text-xs text-slate-400">Дебит</span>
-                </div>
-                <span className="font-bold text-emerald-400">{telemetry.flow_rate_oil?.toFixed(1)} т/сут</span>
+              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-3 transition-colors hover:border-zinc-700">
+                <span className="text-xs text-zinc-400">Дебит нефти</span>
+                <span className="text-sm font-semibold text-zinc-50">{telemetry.flow_rate_oil?.toFixed(1)} т/сут</span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700/30 hover:border-purple-500/30 transition-colors">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">💧</span>
-                  <span className="text-xs text-slate-400">Обводн.</span>
-                </div>
-                <span className="font-bold text-purple-400">{telemetry.water_cut?.toFixed(1)}%</span>
+              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-zinc-900/50 p-3 transition-colors hover:border-zinc-700">
+                <span className="text-xs text-zinc-400">Обводнённость</span>
+                <span className="text-sm font-semibold text-zinc-50">{telemetry.water_cut?.toFixed(1)}%</span>
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-slate-500">
-              <span className="text-3xl">📡</span>
-              <p className="text-sm mt-2">Нет данных</p>
+            <div className="py-8 text-center text-zinc-500">
+              <p className="text-sm">Нет данных телеметрии</p>
             </div>
           )}
 
           {/* Время обновления */}
-          <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-center gap-2 text-xs text-slate-500">
-            <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse"></span>
+          <div className="mt-4 flex items-center justify-center gap-2 border-t border-zinc-800/80 pt-4 text-xs text-zinc-500">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
             Обновлено: {getTimeAgo(telemetry?.timestamp)}
           </div>
         </div>

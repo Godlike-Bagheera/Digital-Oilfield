@@ -15,10 +15,10 @@ export default function AlertBanner({ alerts }) {
   return (
     <div
       onClick={handleClick}
- className="cursor-pointer bg-red-600 text-white px-4 py-2 flex items-center justify-between shadow-md"
+ className="mb-6 flex cursor-pointer items-center justify-between rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 shadow-lg text-rose-400"
     >
- <div className="flex items-center gap-2 font-semibold">
- <span className="animate-pulse-slow">⚠️</span>
+ <div className="flex items-center gap-2 text-sm font-semibold">
+ <span className="h-2 w-2 animate-pulse rounded-full bg-rose-500"></span>
         <span>Активных алертов: {count}</span>
       </div>
       <button
@@ -26,7 +26,7 @@ export default function AlertBanner({ alerts }) {
           e.stopPropagation();
           setVisible(false);
         }}
- className="text-white/80 hover:text-white text-xl leading-none px-2"
+ className="px-2 text-lg leading-none text-rose-400/70 transition-colors hover:text-rose-300"
         title="Закрыть"
       >
         ✕

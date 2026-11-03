@@ -16,7 +16,7 @@ const PARAM_OPTIONS = [
   { key: 'current', label: '⚡ Ток (А)', color: '#3b82f6' },
   { key: 'casing_pressure', label: '📊 Затрубное (МПа)', color: '#ef4444' },
   { key: 'temperature', label: '🌡️ Температура (°C)', color: '#eab308' },
-  { key: 'flow_rate_oil', label: '🛢️ Дебит нефти (т/сут)', color: '#22c55e' },
+  { key: 'flow_rate_oil', label: 'Дебит нефти (т/сут)', color: '#22c55e' },
   { key: 'water_cut', label: '💦 Обводнённость (%)', color: '#06b6d4' },
 ];
 
