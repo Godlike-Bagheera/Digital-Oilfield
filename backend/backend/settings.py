@@ -3,6 +3,8 @@ Django settings for backend project (Цифровое месторождение
 """
 from pathlib import Path
 
+from django.templatetags.static import static
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -92,6 +94,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+# Каталог проекта для статики — позволяет static() найти custom_admin.css
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -114,67 +121,52 @@ REST_FRAMEWORK = {
 # Django Unfold — настройка темы админки
 
 UNFOLD = {
-    "SITE_HEADER": "Цифровое месторождение - Администрирование",
     "SITE_TITLE": "Цифровое месторождение",
-    "INDEX_TITLE": "Панель управления",
+    "SITE_HEADER": "Цифровое месторождение",
+    "SITE_SYMBOL": "local_gas_station",  # ПРАВИЛЬНАЯ иконка Material Icons (oil_barrel не существует)
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": False,
+    "BORDER_RADIUS": "8px",
+    "STYLES": [
+        # Кастомный CSS админки (шрифт, таблицы, кнопки, тёмная тема)
+        lambda request: static("admin/css/custom_admin.css"),
+    ],
     "COLORS": {
         "base": {
-            "50": "249 250 251",
-            "950": "17 24 39",
+            "50": "244 244 245", "100": "228 228 231", "200": "212 212 216",
+            "300": "161 161 170", "400": "113 113 122", "500": "82 82 91",
+            "600": "63 63 70", "700": "39 39 42", "800": "24 24 27",
+            "900": "18 18 21", "950": "9 9 11",
         },
         "primary": {
-            "50": "236 253 245",
-            "100": "209 250 229",
-            "200": "167 243 208",
-            "300": "110 231 183",
-            "400": "52 211 153",
-            "500": "16 185 129",
-            "600": "5 150 105",
-            "700": "4 120 87",
-            "800": "6 95 70",
-            "900": "4 78 56",
-            "950": "2 44 34",
+            "50": "239 246 255", "100": "219 234 254", "200": "191 219 254",
+            "300": "147 197 253", "400": "96 165 250", "500": "59 130 246",
+            "600": "37 99 235", "700": "29 78 216", "800": "30 64 175",
+            "900": "30 58 138", "950": "23 37 84",
         },
     },
     "SIDEBAR": {
         "show_search": True,
-        "show_all_applications": True,
+        "show_all_applications": False,
         "navigation": [
             {
                 "title": "Мониторинг",
                 "separator": True,
                 "items": [
-                    {
-                        "title": "Скважины",
-                        "icon": "oil_barrel",
-                        "link": "/admin/wells/well/",
-                    },
-                    {
-                        "title": "Телеметрия",
-                        "icon": "monitoring",
-                        "link": "/admin/wells/telemetrydata/",
-                    },
-                    {
-                        "title": "Алерты",
-                        "icon": "warning",
-                        "link": "/admin/wells/alert/",
-                    },
+                    {"title": "Скважины", "icon": "factory", "link": "/admin/wells/well/"},
+                    {"title": "Телеметрия", "icon": "monitoring", "link": "/admin/wells/telemetrydata/"},
+                    {"title": "Алерты", "icon": "warning", "link": "/admin/wells/alert/"},
                 ],
             },
             {
                 "title": "Обучение",
                 "separator": True,
                 "items": [
-                    {
-                        "title": "Подсказки",
-                        "icon": "school",
-                        "link": "/admin/wells/trainingtip/",
-                    },
+                    {"title": "Подсказки", "icon": "school", "link": "/admin/wells/trainingtip/"},
                 ],
             },
         ],
     },
 }
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
