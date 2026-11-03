@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from wells.models import Alert, TelemetryData, TrainingTip, Well
+from wells.models import Alert, TrainingTip, Well
 from wells.serializers import (
     AlertSerializer,
     TelemetryDataSerializer,
