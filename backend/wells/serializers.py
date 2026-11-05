@@ -56,6 +56,7 @@ class WellListSerializer(serializers.ModelSerializer):
         model = Well
         fields = [
             'id', 'number', 'cdng', 'well_type', 'pump_type', 'status',
+            'latitude', 'longitude',
             'is_active', 'latest_telemetry',
         ]
 

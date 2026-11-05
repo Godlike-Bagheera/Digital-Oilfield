@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 // Пункт «Скважины» убран — дублировал Дашборд (список скважин виден на главной)
 const NAV_ITEMS = [
   { to: '/', label: 'Дашборд', icon: '▦' },
+  { to: '/map', label: 'Карта', icon: '🗺️' },
   { to: '/alerts', label: 'Алерты', icon: '▲' },
   { to: '/reports', label: 'Отчеты', icon: '▤' },
 ];

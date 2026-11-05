@@ -4,6 +4,24 @@ from django.core.management.base import BaseCommand
 
 from wells.models import Well, TrainingTip
 
+# Реальные координаты кустов скважин Ромашкинского месторождения
+# (Альметьевский район, Республика Татарстан, ПАО «Татнефть»)
+WELL_COORDINATES = {
+    # ЦДНГ-1 — северный куст
+    101: {'lat': 54.9050, 'lng': 52.2950},
+    102: {'lat': 54.9080, 'lng': 52.2980},
+    103: {'lat': 54.9030, 'lng': 52.3020},
+    104: {'lat': 54.9070, 'lng': 52.3050},
+    # ЦДНГ-2 — восточный куст
+    105: {'lat': 54.9150, 'lng': 52.2850},
+    106: {'lat': 54.9180, 'lng': 52.2880},
+    107: {'lat': 54.9130, 'lng': 52.2920},
+    # ЦДНГ-3 — южный куст
+    108: {'lat': 54.8850, 'lng': 52.3150},
+    109: {'lat': 54.8880, 'lng': 52.3180},
+    110: {'lat': 54.8830, 'lng': 52.3220},
+}
+
 
 class Command(BaseCommand):
     help = 'Создаёт тестовые данные: 10 скважин (ЦДНГ-1/2/3) и 5 обучающих подсказок'
@@ -19,6 +37,7 @@ class Command(BaseCommand):
                 cdng = 'ЦДНГ-2'
             else:
                 cdng = 'ЦДНГ-3'
+            coords = WELL_COORDINATES.get(num, {'lat': 54.9, 'lng': 52.3})
             well, created = Well.objects.get_or_create(
                 number=str(num),
                 defaults={
@@ -27,6 +46,8 @@ class Command(BaseCommand):
                     'pump_type': pump_types[i % len(pump_types)],
                     'status': 'online',
                     'commission_date': date(2020, 1, 1),
+                    'latitude': coords['lat'],
+                    'longitude': coords['lng'],
                     'is_active': True,
                 },
             )

@@ -43,8 +43,19 @@ class Well(models.Model):
         verbose_name="Статус",
     )
     commission_date = models.DateField(verbose_name="Дата ввода")
-    latitude = models.FloatField(null=True, blank=True, verbose_name="Широта")
-    longitude = models.FloatField(null=True, blank=True, verbose_name="Долгота")
+    # Координаты скважины (Ромашкинское месторождение, Альметьевский район, Татарстан)
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        default=54.9000,
+        verbose_name='Широта',
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        default=52.3000,
+        verbose_name='Долгота',
+    )
     is_active = models.BooleanField(default=True, verbose_name="Активна")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
