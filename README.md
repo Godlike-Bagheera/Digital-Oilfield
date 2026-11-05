@@ -142,6 +142,9 @@ python manage.py simulate_telemetry --continuous
 
 # С аномалиями (обрыв штанг, перегрев)
 python manage.py simulate_telemetry --continuous --with-anomalies
+
+# Демо предиктивного алерта (растущий тренд тока у первой скважины)
+python manage.py create_predictive_test
 ```
 
 **Важно:** скважины в статусе alarm или maintenance генерируют только «мёртвые» данные (ток=0) до ручного перезапуска.
@@ -167,10 +170,13 @@ Digital-Oilfield/
 │   │   │   ├── pdf_export.py
 │   │   │   └── incident_investigation.py
 │   │   └── management/commands/
-│   │       ├── simulate_telemetry.py
-│   │       ├── create_test_data.py
-│   │       └── create_superuser.py
+│   │       ├── create_test_data.py       # 10 скважин (ЦДНГ 4+3+3, координаты кустов) + подсказки
+│   │       ├── create_superuser.py       # admin / admin123
+│   │       ├── create_predictive_test.py # демо-тренд тока для предиктивного алерта
+│   │       ├── simulate_once.py
+│   │       └── simulate_telemetry.py
 │   ├── manage.py
+│   ├── test_system.py           # Тесты backend
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/

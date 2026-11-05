@@ -37,3 +37,10 @@ package-lock.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Временные скрипты для разовых исправлений
+backend/fix_*.py
+backend/update_*.py
+backend/patch_*.py
+backend/temp_*.py
+backend/create_*_test.py
