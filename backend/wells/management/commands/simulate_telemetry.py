@@ -139,13 +139,23 @@ class Command(BaseCommand):
                     'water_cut': round(45 + random.uniform(-3, 3), 2),
                     'stroke_rate': round(7 + random.uniform(-0.5, 0.5), 2),
                 }
+                # Аномалии возможны и в пост-ремонтном режиме, иначе после первого
+                # ремонта скважина навсегда остаётся «идеальной» и --with-anomalies не работает
+                anomaly_name = None
+                if with_anomalies and random.random() < 0.05:
+                    anomaly_name, changes = random.choice(list(ANOMALIES.items()))
+                    data.update(changes)
                 health = calculate_health_index(data)
                 record = TelemetryData.objects.create(
                     well=well, health_index=health['health_index'], **data)
-                check_and_create_alerts(well, data)
-                self.stdout.write(
-                    f'Скважина №{well.number}: HI={health["health_index"]} '
-                    f'(пост-ремонтный режим, база = эталонная телеметрия)')
+                alerts, status = check_and_create_alerts(well, data)
+                msg = (f'Скважина №{well.number}: HI={health["health_index"]} '
+                       f'(пост-ремонтный режим, база = эталонная телеметрия)')
+                if anomaly_name:
+                    msg += f' [АНОМАЛИЯ: {anomaly_name}], статус={status}'
+                if alerts:
+                    msg += f', создано алертов: {len(alerts)}'
+                self.stdout.write(msg)
                 continue
 
             data = {}

@@ -1,17 +1,16 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AlertBanner({ alerts }) {
   const [visible, setVisible] = React.useState(true);
+  const navigate = useNavigate();
 
   if (!alerts || alerts.length === 0 || !visible) return null;
 
   const count = alerts.length;
 
-  const handleClick = () => {
-    // Пока просто пишем в консоль (позже — скролл к списку алертов или модалка)
-    console.log('Активные алерты:', alerts);
-  };
+  const handleClick = () => navigate('/alerts');
 
   return (
     <div

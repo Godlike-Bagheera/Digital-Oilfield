@@ -6,8 +6,10 @@ import PeriodSelector from '../components/PeriodSelector';
 import HealthGauge from '../components/HealthGauge';
 import PredictiveAlert from '../components/PredictiveAlert';
 import InvestigationModal from '../components/InvestigationModal';
+import ConfirmModal from '../components/ConfirmModal';
+import toast from 'react-hot-toast';
 import { checkAllPredictions } from '../utils/predictions';
-import { Zap, Gauge, Activity, Thermometer, Droplet, Fuel, Waves, RotateCw, Wrench, TrendingUp, FileSpreadsheet, FileText, ArrowLeft } from 'lucide-react';
+import { Zap, Gauge, Activity, Thermometer, Droplet, Fuel, Waves, RotateCw, Wrench, TrendingUp, FileSpreadsheet, FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import * as api from '../services/api';
 
 const STATUS_BADGE = {
@@ -38,6 +40,10 @@ export default function WellDetail() {
   const [visibleAlertsCount, setVisibleAlertsCount] = useState(5);
   // Фильтр по дате для вкладки «Вся история» (пустая строка — без фильтра)
   const [alertDate, setAlertDate] = useState('');
+  // Состояния загрузки: подтверждение и выполнение ремонта, экспорт (ключ — тип отчёта)
+  const [showRepairConfirm, setShowRepairConfirm] = useState(false);
+  const [isRepairing, setIsRepairing] = useState(false);
+  const [isExporting, setIsExporting] = useState({});
 
   const fetchTelemetry = useCallback(async (wellId, prd) => {
     try {
@@ -47,8 +53,6 @@ export default function WellDetail() {
       // Предиктивный анализ по полученной телеметрии
       const preds = checkAllPredictions(list);
       setPredictions(preds);
-      // Лог для проверки в консоли браузера (F12)
-      console.log('Предиктивные алерты:', preds);
     } catch (e) {
       console.error('Ошибка загрузки телеметрии:', e);
     }
@@ -56,7 +60,8 @@ export default function WellDetail() {
 
   const fetchAlerts = useCallback(async (wellId) => {
     try {
-      const data = await api.getAlerts({ well: wellId });
+      // /wells/{id}/alerts/ отдаёт ВСЕ алерты скважины без пагинации
+      const data = await api.getWellAlerts(wellId);
       setAlerts(Array.isArray(data) ? data : data.results || []);
     } catch (e) {
       console.error('Ошибка загрузки алертов:', e);
@@ -112,7 +117,6 @@ export default function WellDetail() {
       }
       await fetchTelemetry(id, period);
       await fetchAlerts(id);
-      console.log('Обновлено:', new Date().toLocaleTimeString());
     }, 5000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -181,8 +185,8 @@ export default function WellDetail() {
   // Завершение ремонта: вызывает POST /api/wells/{id}/repair/ и подтягивает
   // СВЕЖИЕ данные с сервера (без перезагрузки страницы и без локального setWell)
   const handleRepair = async () => {
-    if (!window.confirm(`Завершить ремонт скважины №${well.number}?`)) return;
-
+    if (isRepairing) return;
+    setIsRepairing(true);
     try {
       const response = await fetch(`/api/wells/${well.id}/repair/`, {
         method: 'POST',
@@ -204,110 +208,56 @@ export default function WellDetail() {
       // Очищаем предиктивные алерты до следующего обновления телеметрии
       setPredictions([]);
 
-      alert(data.message || 'Скважина перезапущена после ремонта');
+      toast.success(data.message || 'Скважина перезапущена после ремонта');
     } catch (err) {
       console.error('Repair error:', err);
-      alert('Ошибка ремонта: ' + err.message);
+      toast.error('Ошибка ремонта: ' + err.message);
+    } finally {
+      setIsRepairing(false);
     }
   };
 
   const chartData = (key) => telemetry.map((t) => ({ timestamp: t.timestamp, value: t[key] }));
 
-  // Экспорт телеметрии скважины в Excel
-  const handleExportTelemetry = async () => {
+  // Общая логика скачивания отчёта: POST на эндпоинт экспорта -> blob -> файл
+  const downloadReport = async (key, endpoint, body, filename) => {
+    if (isExporting[key]) return;
+    setIsExporting((prev) => ({ ...prev, [key]: true }));
     try {
-      const response = await fetch('/api/wells/export/telemetry/', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ well_id: well.id, period }),
+        body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error('Export failed');
-
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `telemetry_well_${well.number}_${period}.xlsx`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      toast.success(`Файл ${filename} скачан`);
     } catch (error) {
-      alert('Ошибка экспорта: ' + error.message);
+      toast.error('Ошибка экспорта: ' + error.message);
+    } finally {
+      setIsExporting((prev) => ({ ...prev, [key]: false }));
     }
   };
 
-  // Экспорт телеметрии скважины в PDF
-  const handleExportTelemetryPdf = async () => {
-    try {
-      const response = await fetch('/api/wells/export/telemetry-pdf/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ well_id: well.id, period: period }),
-      });
-      if (!response.ok) throw new Error('Export failed');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `telemetry_well_${well.number}_${period}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      alert('Ошибка экспорта PDF: ' + error.message);
-    }
-  };
-
-  // Экспорт сменного отчёта в Excel
-  const handleExportShiftReport = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const response = await fetch('/api/wells/export/shift-report/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: today }),
-      });
-      if (!response.ok) throw new Error('Export failed');
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `shift_report_${today}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      alert('Ошибка экспорта: ' + error.message);
-    }
-  };
-
-  // Экспорт сменного отчёта в PDF
-  const handleExportShiftReportPdf = async () => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const response = await fetch('/api/wells/export/shift-report-pdf/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: today }),
-      });
-      if (!response.ok) throw new Error('Export failed');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `shift_report_${today}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      alert('Ошибка экспорта PDF: ' + error.message);
-    }
-  };
+  const today = new Date().toISOString().split('T')[0];
+  const exportActions = [
+    { key: 'telemetryExcel', label: 'Экспорт в Excel', Icon: FileSpreadsheet,
+      run: () => downloadReport('telemetryExcel', '/api/wells/export/telemetry/', { well_id: well.id, period }, `telemetry_well_${well.number}_${period}.xlsx`) },
+    { key: 'telemetryPdf', label: 'Телеметрия PDF', Icon: FileText,
+      run: () => downloadReport('telemetryPdf', '/api/wells/export/telemetry-pdf/', { well_id: well.id, period }, `telemetry_well_${well.number}_${period}.pdf`) },
+    { key: 'shiftExcel', label: 'Сменный отчёт Excel', Icon: FileSpreadsheet,
+      run: () => downloadReport('shiftExcel', '/api/wells/export/shift-report/', { date: today }, `shift_report_${today}.xlsx`) },
+    { key: 'shiftPdf', label: 'Сменный отчёт PDF', Icon: FileText,
+      run: () => downloadReport('shiftPdf', '/api/wells/export/shift-report-pdf/', { date: today }, `shift_report_${today}.pdf`) },
+  ];
 
   const charts = [
     { title: 'Ток двигателя', unit: 'А', color: '#3b82f6', icon: <Zap size={18} />, key: 'current', tip: 'current' },
@@ -369,11 +319,12 @@ export default function WellDetail() {
             {(well.status === 'alarm' || well.status === 'maintenance') && (
               <div>
                 <button
-                  onClick={handleRepair}
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-rose-900/30 transition-colors hover:bg-rose-500 active:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                  onClick={() => setShowRepairConfirm(true)}
+                  disabled={isRepairing}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-rose-900/30 transition-colors hover:bg-rose-500 active:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Wrench size={16} />
-                  Завершить ремонт и перезапустить скважину
+                  {isRepairing ? <Loader2 size={16} className="animate-spin" /> : <Wrench size={16} />}
+                  {isRepairing ? 'Перезапуск скважины...' : 'Завершить ремонт и перезапустить скважину'}
                 </button>
               </div>
             )}
@@ -503,41 +454,30 @@ export default function WellDetail() {
  <section className="mb-8">
  <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Действия</h2>
  <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={handleExportTelemetry}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            <FileSpreadsheet size={16} />
-            Экспорт в Excel
-          </button>
-          <button
-            type="button"
-            onClick={handleExportTelemetryPdf}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            <FileText size={16} />
-            Телеметрия PDF
-          </button>
-          <button
-            type="button"
-            onClick={handleExportShiftReport}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            <FileSpreadsheet size={16} />
-            Сменный отчёт Excel
-          </button>
-          <button
-            type="button"
-            onClick={handleExportShiftReportPdf}
-            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-          >
-            <FileText size={16} />
-            Сменный отчёт PDF
-          </button>
-          
+          {exportActions.map(({ key, label, Icon, run }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={run}
+              disabled={!!isExporting[key]}
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isExporting[key] ? <Loader2 size={16} className="animate-spin" /> : <Icon size={16} />}
+              {isExporting[key] ? 'Формирование...' : label}
+            </button>
+          ))}
         </div>
       </section>
+
+      <ConfirmModal
+        isOpen={showRepairConfirm}
+        onClose={() => setShowRepairConfirm(false)}
+        onConfirm={handleRepair}
+        title="Завершить ремонт"
+        message={`Перезапустить скважину №${well.number}? Активные алерты будут закрыты, параметры сброшены к эталонным значениям.`}
+        confirmLabel="Перезапустить"
+        danger
+      />
 
       {/* Модалка расследования — открывается кнопкой «Расследовать» в AlertList */}
       <InvestigationModal

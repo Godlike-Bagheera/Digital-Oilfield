@@ -114,7 +114,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Django REST Framework
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'wells.pagination.FlexiblePageNumberPagination',
     'PAGE_SIZE': 20,
 }
 

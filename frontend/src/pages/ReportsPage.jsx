@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FileSpreadsheet, FileText, Info } from 'lucide-react';
+import { FileSpreadsheet, FileText, Info, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 // Страница отчётов: выбор скважины + периода и скачивание Excel/PDF
 export default function ReportsPage() {
@@ -7,7 +8,8 @@ export default function ReportsPage() {
   const [selectedWellId, setSelectedWellId] = useState('');
   const [period, setPeriod] = useState('24h');
   const [isLoading, setIsLoading] = useState(true);
-  const [isExporting, setIsExporting] = useState(false);
+  // Какой отчёт сейчас формируется: 'excel' | 'pdf' | null
+  const [isExporting, setIsExporting] = useState(null);
 
   // Загружаем список скважин при монтировании
   useEffect(() => {
@@ -30,12 +32,16 @@ export default function ReportsPage() {
 
   // Скачивание файла через POST на готовые эндпоинты экспорта
   const handleExport = async (type) => {
-    if (!selectedWellId) return alert('Выберите скважину');
+    if (!selectedWellId) {
+      toast.error('Выберите скважину');
+      return;
+    }
+    if (isExporting) return;
     const endpoint = type === 'excel'
       ? '/api/wells/export/telemetry/'
       : '/api/wells/export/telemetry-pdf/';
     try {
-      setIsExporting(true);
+      setIsExporting(type);
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,10 +58,11 @@ export default function ReportsPage() {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      toast.success(`Отчёт ${a.download} скачан`);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
-      setIsExporting(false);
+      setIsExporting(null);
     }
   };
 
@@ -118,19 +125,19 @@ export default function ReportsPage() {
         <div className="mt-6 flex flex-wrap gap-3">
           <button
             onClick={() => handleExport('excel')}
-            disabled={isExporting}
+            disabled={!!isExporting}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FileSpreadsheet size={16} />
-            Скачать Excel
+            {isExporting === 'excel' ? <Loader2 size={16} className="animate-spin" /> : <FileSpreadsheet size={16} />}
+            {isExporting === 'excel' ? 'Формирование...' : 'Скачать Excel'}
           </button>
           <button
             onClick={() => handleExport('pdf')}
-            disabled={isExporting}
+            disabled={!!isExporting}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 active:bg-zinc-900 text-zinc-200 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FileText size={16} />
-            Скачать PDF
+            {isExporting === 'pdf' ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+            {isExporting === 'pdf' ? 'Формирование...' : 'Скачать PDF'}
           </button>
         </div>
       </div>

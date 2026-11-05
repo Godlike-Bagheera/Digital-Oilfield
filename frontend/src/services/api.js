@@ -32,6 +32,12 @@ export const getAlerts = async (params = {}) => {
   return response.data.results || response.data;
 };
 
+// Все алерты одной скважины (эндпоинт без пагинации)
+export const getWellAlerts = async (wellId) => {
+  const response = await api.get(`/wells/${wellId}/alerts/`);
+  return response.data;
+};
+
 // Получить обучающие подсказки
 export const getTrainingTips = async (params = {}) => {
   const response = await api.get('/training-tips/', { params });

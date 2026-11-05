@@ -71,7 +71,7 @@ export default function useAlertNotifications(interval = 10000) {
       // Пропускаем проверку, если вкладка не активна
       if (document.hidden) return;
       try {
-        const response = await fetch('/api/alerts/?is_active=true');
+        const response = await fetch('/api/alerts/?is_active=true&page_size=1000');
         if (!response.ok || cancelled) return;
         const data = await response.json();
         const alerts = data.results || data;

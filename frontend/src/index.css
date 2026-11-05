@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 /* Откат: CSS-переменные и мульти-темы удалены. Одна строгая тёмная тема (Vercel-style). */
 
 @tailwind base;
@@ -26,7 +24,8 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Системный стек шрифтов — работает без интернета */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   background-color: #09090b;
   color: #f4f4f5;
   margin: 0;

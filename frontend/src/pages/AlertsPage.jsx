@@ -30,7 +30,7 @@ export default function AlertsPage() {
       try {
         const [wellsMap, response] = await Promise.all([
           fetchWellsMap(),
-          api.get('/alerts/?is_active=true'),
+          api.get('/alerts/?is_active=true&page_size=1000'),
         ]);
         const list = response.data.results || response.data;
         // Добавляем каждой записи wellId по номеру скважины

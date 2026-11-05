@@ -11,6 +11,15 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      // Django-админка и её статика через тот же порт, что и фронтенд
+      '/admin': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/static': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 });

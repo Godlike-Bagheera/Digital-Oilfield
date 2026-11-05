@@ -60,7 +60,7 @@ export default function Layout({ children }) {
         {/* Ссылка на Django-админку — над блоком статуса системы */}
         <div className="px-4 pb-2">
           <a
-            href="http://localhost:8000/admin/"
+            href="/admin/"
             target="_blank"
             rel="noreferrer"
             className="flex items-center justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-100"

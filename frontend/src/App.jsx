@@ -1,13 +1,23 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import WellDetail from './pages/WellDetail.jsx';
-import WellsPage from './pages/WellsPage.jsx';
-import AlertsPage from './pages/AlertsPage.jsx';
-import ReportsPage from './pages/ReportsPage.jsx';
-import MapPage from './pages/MapPage.jsx';
+
+// Code splitting: каждая страница — отдельный чанк, загружается при первом переходе
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const WellDetail = lazy(() => import('./pages/WellDetail.jsx'));
+const WellsPage = lazy(() => import('./pages/WellsPage.jsx'));
+const AlertsPage = lazy(() => import('./pages/AlertsPage.jsx'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
+const MapPage = lazy(() => import('./pages/MapPage.jsx'));
+
+function LoadingFallback() {
+  return (
+    <div className="flex h-64 items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-b-blue-500" />
+    </div>
+  );
+}
 import useAlertNotifications from './hooks/useAlertNotifications';
 
 // Внутренний компонент: здесь доступны хуки роутера и глобальные уведомления.
@@ -19,14 +29,16 @@ export default function App() {
   return (
     <>
       <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/wells" element={<WellsPage />} />
-          <Route path="/map" element={<MapPage />} />
-          <Route path="/alerts" element={<AlertsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/well/:id" element={<WellDetail />} />
-        </Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/wells" element={<WellsPage />} />
+            <Route path="/map" element={<MapPage />} />
+            <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/well/:id" element={<WellDetail />} />
+          </Routes>
+        </Suspense>
       </Layout>
       <Toaster
         position="top-right"
