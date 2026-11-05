@@ -96,16 +96,14 @@ export default function MapPage() {
       </div>
 
       <div className="flex-1 min-h-[600px]">
-        <div className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
+        <div className="relative h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
           <MapContainer
             center={center} zoom={11}
+            attributionControl={false}
             style={{ height: '100%', width: '100%' }}
             scrollWheelZoom={true}
           >
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="" />
             {wells.map(well => (
               <Marker
                 key={well.id}
@@ -129,6 +127,10 @@ export default function MapPage() {
               </Marker>
             ))}
           </MapContainer>
+          {/* Минимальный attribution по лицензии ODbL — крошечный и полупрозрачный */}
+          <div className="pointer-events-none absolute bottom-1 right-2 z-[500]">
+            <span className="text-[9px] text-zinc-500/50">© OpenStreetMap</span>
+          </div>
         </div>
       </div>
     </div>
