@@ -67,7 +67,7 @@ export default function MapPage() {
     return <div className="p-8 text-zinc-400 animate-pulse">Загрузка карты...</div>;
   }
 
-  const center = [54.9000, 52.3000]; // Центр между всеми 3 кустами
+  const center = [54.8840, 52.3210]; // Центр между всеми 3 кустами
 
   const statusCounts = wells.reduce((acc, w) => {
     acc[w.status] = (acc[w.status] || 0) + 1;
