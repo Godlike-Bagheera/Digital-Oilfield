@@ -67,7 +67,7 @@ export default function MapPage() {
     return <div className="p-8 text-zinc-400 animate-pulse">Загрузка карты...</div>;
   }
 
-  const center = [54.9000, 52.3000]; // Альметьевск
+  const center = [54.9000, 52.3000]; // Центр между всеми 3 кустами
 
   const statusCounts = wells.reduce((acc, w) => {
     acc[w.status] = (acc[w.status] || 0) + 1;
@@ -79,7 +79,7 @@ export default function MapPage() {
       <div className="p-6 pb-4">
         <h1 className="text-3xl font-bold text-zinc-50 mb-2">Карта месторождения</h1>
         <p className="text-zinc-400 text-sm">
-          Ромашкинское месторождение • Альметьевский район • {wells.length} скважин
+          Ромашкинское нефтяное месторождение • 3 куста скважин • {wells.length} скважин в работе
         </p>
       </div>
 
@@ -98,7 +98,7 @@ export default function MapPage() {
       <div className="flex-1 px-6 pb-6 min-h-[500px]">
         <div className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
           <MapContainer
-            center={center} zoom={12}
+            center={center} zoom={11}
             style={{ height: '100%', width: '100%' }}
             scrollWheelZoom={true}
           >
