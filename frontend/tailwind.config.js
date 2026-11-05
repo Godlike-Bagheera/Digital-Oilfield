@@ -5,6 +5,15 @@ export default {
   theme: {
     extend: {
       // Откат: кастомные цвета-переменные удалены, остаются стандартные цвета Tailwind
+      colors: {
+        status: {
+          online: '#10b981',
+          warning: '#f59e0b',
+          alarm: '#ef4444',
+          maintenance: '#f97316',
+          offline: '#6b7280',
+        },
+      },
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
       },

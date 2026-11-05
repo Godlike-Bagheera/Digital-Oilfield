@@ -7,6 +7,7 @@ import HealthGauge from '../components/HealthGauge';
 import PredictiveAlert from '../components/PredictiveAlert';
 import InvestigationModal from '../components/InvestigationModal';
 import { checkAllPredictions } from '../utils/predictions';
+import { Zap, Gauge, Activity, Thermometer, Droplet, Fuel, Waves, RotateCw, Wrench, TrendingUp, FileSpreadsheet, FileText, ArrowLeft } from 'lucide-react';
 import * as api from '../services/api';
 
 const STATUS_BADGE = {
@@ -47,7 +48,7 @@ export default function WellDetail() {
       const preds = checkAllPredictions(list);
       setPredictions(preds);
       // Лог для проверки в консоли браузера (F12)
-      console.log('🔮 Предиктивные алерты:', preds);
+      console.log('Предиктивные алерты:', preds);
     } catch (e) {
       console.error('Ошибка загрузки телеметрии:', e);
     }
@@ -167,7 +168,7 @@ export default function WellDetail() {
  <div className="mt-10 text-center text-zinc-400">
  <p className="mb-4 text-xl">Скважина не найдена</p>
  <button type="button" onClick={() => navigate('/')} className="text-blue-400 underline-offset-4 hover:underline">
-          ← Назад к списку
+          <ArrowLeft size={14} className="mr-1 inline" />Назад к списку
         </button>
       </div>
     );
@@ -309,14 +310,14 @@ export default function WellDetail() {
   };
 
   const charts = [
-    { title: 'Ток двигателя', unit: 'А', color: '#3b82f6', icon: '⚡', key: 'current', tip: 'current' },
-    { title: 'Давление затрубное', unit: 'МПа', color: '#ef4444', icon: '📊', key: 'casing_pressure', tip: 'casing_pressure' },
-    { title: 'Давление нагнетательное', unit: 'МПа', color: '#f97316', icon: '📈', key: 'discharge_pressure', tip: null },
-    { title: 'Температура', unit: '°C', color: '#eab308', icon: '🌡️', key: 'temperature', tip: 'temperature' },
-    { title: 'Дебит жидкости', unit: 'м³/сут', color: '#8b5cf6', icon: '💧', key: 'flow_rate_liquid', tip: null },
-    { title: 'Дебит нефти', unit: 'т/сут', color: '#22c55e', icon: '●', key: 'flow_rate_oil', tip: 'flow_rate_oil' },
-    { title: 'Обводнённость', unit: '%', color: '#06b6d4', icon: '💦', key: 'water_cut', tip: 'water_cut' },
-    { title: 'Число качаний', unit: 'кач/мин', color: '#ec4899', icon: '⚙️', key: 'stroke_rate', tip: null },
+    { title: 'Ток двигателя', unit: 'А', color: '#3b82f6', icon: <Zap size={18} />, key: 'current', tip: 'current' },
+    { title: 'Давление затрубное', unit: 'МПа', color: '#ef4444', icon: <Gauge size={18} />, key: 'casing_pressure', tip: 'casing_pressure' },
+    { title: 'Давление нагнетательное', unit: 'МПа', color: '#f97316', icon: <Activity size={18} />, key: 'discharge_pressure', tip: null },
+    { title: 'Температура', unit: '°C', color: '#eab308', icon: <Thermometer size={18} />, key: 'temperature', tip: 'temperature' },
+    { title: 'Дебит жидкости', unit: 'м³/сут', color: '#8b5cf6', icon: <Droplet size={18} />, key: 'flow_rate_liquid', tip: null },
+    { title: 'Дебит нефти', unit: 'т/сут', color: '#22c55e', icon: <Fuel size={18} />, key: 'flow_rate_oil', tip: 'flow_rate_oil' },
+    { title: 'Обводнённость', unit: '%', color: '#06b6d4', icon: <Waves size={18} />, key: 'water_cut', tip: 'water_cut' },
+    { title: 'Число качаний', unit: 'кач/мин', color: '#ec4899', icon: <RotateCw size={18} />, key: 'stroke_rate', tip: null },
   ];
 
   // Фильтрация алертов по табам, дате (вкладка «История») и пагинация (5 записей + «Показать ещё»)
@@ -369,9 +370,10 @@ export default function WellDetail() {
               <div>
                 <button
                   onClick={handleRepair}
-                  className="mt-4 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 transition-all"
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-rose-900/30 transition-colors hover:bg-rose-500 active:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
                 >
-                  🔧 Завершить ремонт и перезапустить скважину
+                  <Wrench size={16} />
+                  Завершить ремонт и перезапустить скважину
                 </button>
               </div>
             )}
@@ -410,7 +412,7 @@ export default function WellDetail() {
       {/* Предиктивные алерты */}
       {predictions.length > 0 && (
  <div className="mb-6">
- <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-zinc-50"><span className="text-blue-400">◆</span> Предиктивные алерты</h2>
+ <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-zinc-50"><TrendingUp size={20} className="text-blue-400" /> Предиктивные алерты</h2>
           {predictions.map((pred, idx) => (
             <PredictiveAlert key={idx} prediction={pred} />
           ))}
@@ -504,29 +506,33 @@ export default function WellDetail() {
           <button
             type="button"
             onClick={handleExportTelemetry}
- className="rounded-lg border border-zinc-800 bg-[#09090b] px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-[#121215] hover:text-zinc-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
+            <FileSpreadsheet size={16} />
             Экспорт в Excel
           </button>
           <button
             type="button"
             onClick={handleExportTelemetryPdf}
- className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
+            <FileText size={16} />
             Телеметрия PDF
           </button>
           <button
             type="button"
             onClick={handleExportShiftReport}
- className="rounded-lg border border-zinc-800 bg-[#09090b] px-4 py-2.5 text-sm font-medium text-zinc-300 transition-colors hover:bg-[#121215] hover:text-zinc-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
+            <FileSpreadsheet size={16} />
             Сменный отчёт Excel
           </button>
           <button
             type="button"
             onClick={handleExportShiftReportPdf}
- className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
+            className="inline-flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
           >
+            <FileText size={16} />
             Сменный отчёт PDF
           </button>
           

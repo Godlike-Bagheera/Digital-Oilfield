@@ -2,86 +2,75 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import HealthGauge from './HealthGauge';
 
+// Цвета статусов — из единой палитры (CSS-переменные --status-*, tailwind: status.*)
+const STATUS_CONFIG = {
+  online: { text: 'В работе', border: 'border-l-status-online', badge: 'bg-status-online/10 text-status-online border-status-online/20', dot: 'bg-status-online' },
+  warning: { text: 'Внимание', border: 'border-l-status-warning', badge: 'bg-status-warning/10 text-status-warning border-status-warning/20', dot: 'bg-status-warning' },
+  alarm: { text: 'Авария', border: 'border-l-status-alarm', badge: 'bg-status-alarm/10 text-status-alarm border-status-alarm/20 animate-pulse-alert', dot: 'bg-status-alarm' },
+  maintenance: { text: 'В ремонте', border: 'border-l-status-maintenance', badge: 'bg-status-maintenance/10 text-status-maintenance border-status-maintenance/20', dot: 'bg-status-maintenance' },
+  offline: { text: 'Офлайн', border: 'border-l-status-offline', badge: 'bg-status-offline/10 text-zinc-400 border-status-offline/20', dot: 'bg-status-offline' },
+};
+
+const getTimeAgo = (timestamp) => {
+  if (!timestamp) return 'нет данных';
+  const diff = Math.floor((new Date() - new Date(timestamp)) / 1000);
+  if (diff < 60) return 'только что';
+  if (diff < 3600) return `${Math.floor(diff / 60)} мин назад`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ч назад`;
+  return new Date(timestamp).toLocaleDateString('ru-RU');
+};
+
 const WellCard = ({ well }) => {
   const telemetry = well.latest_telemetry;
   const health = telemetry?.health_index || 0;
+  const status = STATUS_CONFIG[well.status] || STATUS_CONFIG.offline;
 
-  const statusConfig = {
-    online: { color: 'from-emerald-500 to-green-600', text: 'В работе', glow: 'shadow-emerald-500/30' },
-    warning: { color: 'from-amber-500 to-yellow-600', text: 'Внимание', glow: 'shadow-amber-500/30' },
-    alarm: { color: 'from-rose-500 to-red-600', text: 'Авария', glow: 'shadow-rose-500/30 animate-pulse-alert' },
-    offline: { color: 'from-slate-500 to-gray-600', text: 'Офлайн', glow: 'shadow-slate-500/30' }
-  };
-  const status = statusConfig[well.status] || statusConfig.offline;
-
-  const getTimeAgo = (timestamp) => {
-    if (!timestamp) return 'нет данных';
-    const diff = Math.floor((new Date() - new Date(timestamp)) / 1000);
-    if (diff < 60) return 'только что';
-    if (diff < 3600) return `${Math.floor(diff / 60)} мин назад`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} ч назад`;
-    return new Date(timestamp).toLocaleDateString('ru-RU');
-  };
+  const params = telemetry
+    ? [
+        { label: 'Ток', value: `${telemetry.current?.toFixed(1)} А` },
+        { label: 'Дебит нефти', value: `${telemetry.flow_rate_oil?.toFixed(1)} т/сут` },
+        { label: 'Обводнённость', value: `${telemetry.water_cut?.toFixed(1)} %` },
+      ]
+    : [];
 
   return (
-    <Link to={`/well/${well.id}`} className="group relative block animate-fade-in-up">
-      <div className="relative h-full overflow-hidden rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-zinc-700 hover:bg-[#16161a] hover:shadow-2xl hover:ring-white/10">
-        {/* Фоновое свечение при наведении */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-emerald-500/0 opacity-0 transition-all duration-500 group-hover:from-blue-500/5 group-hover:to-emerald-500/5 group-hover:opacity-100"></div>
-
-        <div className="relative z-10">
-          {/* Заголовок */}
-          <div className="mb-4 flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-semibold tracking-tight text-zinc-50 transition-colors group-hover:text-white">
-                Скважина №{well.number}
-              </h3>
-              <p className="mt-0.5 text-sm text-zinc-400">{well.cdng}</p>
-            </div>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-              well.status === 'online' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-              well.status === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-              well.status === 'alarm' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse-alert' :
-              'bg-zinc-500/10 text-zinc-400 border border-zinc-500/20'
-            }`}>
-              {status.text}
-            </span>
+    <Link to={`/well/${well.id}`} className="group block animate-fade-in-up focus:outline-none">
+      <div
+        className={`h-full rounded-xl border border-zinc-800/80 border-l-4 ${status.border} bg-[#121215] p-5 shadow-lg ring-1 ring-white/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40 hover:border-zinc-700 group-focus-visible:ring-2 group-focus-visible:ring-blue-500/50`}
+      >
+        <div className="mb-3 flex items-start justify-between gap-2">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{well.cdng}</p>
+            <h3 className="mt-1 text-2xl font-bold tracking-tight text-zinc-50">№{well.number}</h3>
           </div>
+          <span className={`whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium ${status.badge}`}>
+            {status.text}
+          </span>
+        </div>
 
-          {/* Индикатор здоровья */}
-          <div className="my-4 flex justify-center">
-            <div className="transition-transform duration-300 group-hover:scale-105">
-              <HealthGauge value={health} />
-            </div>
-          </div>
+        <div className="my-2 flex justify-center">
+          <HealthGauge value={health} />
+        </div>
 
-          {/* Параметры */}
-          {telemetry ? (
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-[#09090b]/50 p-3 transition-colors hover:border-zinc-700">
-                <span className="text-xs text-zinc-400">Ток</span>
-                <span className="text-sm font-semibold text-zinc-50">{telemetry.current?.toFixed(1)} А</span>
+        {telemetry ? (
+          <dl className="mt-3 divide-y divide-zinc-800/80 rounded-lg border border-zinc-800/80 bg-[#09090b]/50">
+            {params.map((p) => (
+              <div key={p.label} className="flex items-center justify-between px-3 py-2">
+                <dt className="text-xs text-zinc-500">{p.label}</dt>
+                <dd className="text-sm font-medium tabular-nums text-zinc-200">{p.value}</dd>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-[#09090b]/50 p-3 transition-colors hover:border-zinc-700">
-                <span className="text-xs text-zinc-400">Дебит нефти</span>
-                <span className="text-sm font-semibold text-zinc-50">{telemetry.flow_rate_oil?.toFixed(1)} т/сут</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-zinc-800/80 bg-[#09090b]/50 p-3 transition-colors hover:border-zinc-700">
-                <span className="text-xs text-zinc-400">Обводнённость</span>
-                <span className="text-sm font-semibold text-zinc-50">{telemetry.water_cut?.toFixed(1)}%</span>
-              </div>
-            </div>
-          ) : (
-            <div className="py-8 text-center text-zinc-500">
-              <p className="text-sm">Нет данных телеметрии</p>
-            </div>
-          )}
+            ))}
+          </dl>
+        ) : (
+          <div className="py-8 text-center text-sm text-zinc-500">Нет данных телеметрии</div>
+        )}
 
-          {/* Время обновления */}
-          <div className="mt-4 flex items-center justify-center gap-2 border-t border-zinc-800/80 pt-4 text-xs text-zinc-500">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
-            Обновлено: {getTimeAgo(telemetry?.timestamp)}
-          </div>
+        <div className="mt-3 flex items-center justify-between text-xs text-zinc-500">
+          <span className="flex items-center gap-1.5">
+            <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
+            {getTimeAgo(telemetry?.timestamp)}
+          </span>
+          <span className="text-zinc-600 transition-colors group-hover:text-blue-400">Подробнее</span>
         </div>
       </div>
     </Link>

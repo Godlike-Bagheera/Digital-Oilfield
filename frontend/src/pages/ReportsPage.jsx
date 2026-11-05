@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FileSpreadsheet, FileText, Info } from 'lucide-react';
 
 // Страница отчётов: выбор скважины + периода и скачивание Excel/PDF
 export default function ReportsPage() {
@@ -63,7 +64,10 @@ export default function ReportsPage() {
 
   return (
     <div className="animate-fade-in-up">
-      <h1 className="text-3xl font-bold mb-6 text-zinc-50">Отчёты</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-zinc-50 tracking-tight">Отчёты</h1>
+        <p className="text-sm text-zinc-400 mt-1">Выгрузка телеметрии скважин в Excel и PDF</p>
+      </div>
 
       {/* Форма формирования отчёта */}
       <div className="rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg ring-1 ring-white/5">
@@ -115,23 +119,26 @@ export default function ReportsPage() {
           <button
             onClick={() => handleExport('excel')}
             disabled={isExporting}
-            className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-500/50 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            📥 Скачать Excel
+            <FileSpreadsheet size={16} />
+            Скачать Excel
           </button>
           <button
             onClick={() => handleExport('pdf')}
             disabled={isExporting}
-            className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:from-emerald-500 hover:to-teal-500 hover:shadow-emerald-500/50 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-700 active:bg-zinc-900 text-zinc-200 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            📄 Скачать PDF
+            <FileText size={16} />
+            Скачать PDF
           </button>
         </div>
       </div>
 
       {/* Подсказка */}
-      <div className="mt-6 rounded-2xl border border-blue-500/20 bg-blue-500/10 p-5 text-sm text-blue-300">
-        ℹ️ Отчёты формируются на сервере по реальным данным телеметрии за выбранный период.
+      <div className="mt-6 flex items-start gap-3 rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-sm text-blue-300">
+        <Info size={18} className="mt-0.5 shrink-0" />
+        Отчёты формируются на сервере по реальным данным телеметрии за выбранный период.
       </div>
     </div>
   );

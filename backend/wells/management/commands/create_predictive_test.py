@@ -4,7 +4,8 @@
 
 Фронтенд берёт телеметрию по period=24h, а API возвращает последние N записей,
 поэтому создаётся ~300 точек с шагом 1 минута и устойчивым ростом тока
-от 40 до ~86 А (критический порог current_max = 85).
+от 55 до 80 А (~5 А/ч, порог current_max = 85),
+чтобы прогноз проходил проверку стабильности тренда (не более 10% в час).
 """
 import random
 from datetime import timedelta
@@ -15,8 +16,8 @@ from django.utils import timezone
 from wells.models import Well, TelemetryData
 
 POINTS = 300
-BASE_CURRENT = 40.0
-END_CURRENT = 86.0
+BASE_CURRENT = 55.0
+END_CURRENT = 80.0
 
 
 class Command(BaseCommand):
@@ -55,7 +56,13 @@ class Command(BaseCommand):
                     health_index=max(5.0, 95 - progress * 60),
                 )
             )
-        TelemetryData.objects.bulk_create(records)
+        timestamps = [r.timestamp for r in records]
+        created = TelemetryData.objects.bulk_create(records)
+        # timestamp объявлен с auto_now_add, поэтому bulk_create перезаписывает его текущим
+        # временем; восстанавливаем реальную шкалу времени (шаг 1 минута) через bulk_update.
+        for record, ts in zip(created, timestamps):
+            record.timestamp = ts
+        TelemetryData.objects.bulk_update(created, ['timestamp'])
 
         self.stdout.write(self.style.SUCCESS(
             f'Создано {len(records)} записей телеметрии для скважины №{well.number}: '

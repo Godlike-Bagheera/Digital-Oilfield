@@ -1,27 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 // Пункт «Скважины» убран — дублировал Дашборд (список скважин виден на главной)
 const NAV_ITEMS = [
-  { to: '/', label: 'Дашборд', icon: '▦' },
-  { to: '/map', label: 'Карта', icon: '🗺️' },
-  { to: '/alerts', label: 'Алерты', icon: '▲' },
-  { to: '/reports', label: 'Отчеты', icon: '▤' },
+  { to: '/', label: 'Дашборд' },
+  { to: '/map', label: 'Карта' },
+  { to: '/alerts', label: 'Алерты' },
+  { to: '/reports', label: 'Отчёты' },
 ];
 
 export default function Layout({ children }) {
-  const location = useLocation();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const isActive = (to) => {
-    if (to === '/') return location.pathname === '/';
-    return location.pathname.startsWith(to);
-  };
 
   return (
     <div className="bg-[#09090b] flex min-h-screen text-zinc-50">
@@ -44,19 +38,22 @@ export default function Layout({ children }) {
 
         {/* Навигация */}
         <nav className="mt-2 flex-1 space-y-1 px-4">
+          <p className="px-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-600">Навигация</p>
           {NAV_ITEMS.map((item) => (
-            <Link
+            <NavLink
               key={item.to}
               to={item.to}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                isActive(item.to)
-                  ? 'bg-[#121215]/50 text-white'
-                  : 'text-zinc-400 hover:bg-[#09090b] hover:text-zinc-200'
-              }`}
+              end={item.to === '/'}
+              className={({ isActive }) =>
+                `flex items-center px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-blue-500/15 text-blue-400 border-l-2 border-blue-500'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'
+                }`
+              }
             >
-              <span className="text-base leading-none text-zinc-500">{item.icon}</span>
               {item.label}
-            </Link>
+            </NavLink>
           ))}
         </nav>
 
@@ -66,10 +63,10 @@ export default function Layout({ children }) {
             href="http://localhost:8000/admin/"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-[#09090b] hover:text-zinc-200"
+            className="flex items-center justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800/50 hover:text-zinc-100"
           >
-            <span className="text-base leading-none text-zinc-500">⚙</span>
             Админ-панель
+            <span className="text-xs text-zinc-600">Django</span>
           </a>
         </div>
 

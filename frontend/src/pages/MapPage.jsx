@@ -41,8 +41,8 @@ const statusLabels = {
   maintenance: 'В ремонте', offline: 'Офлайн',
 };
 const statusColors = {
-  online: 'bg-emerald-500', warning: 'bg-amber-500', alarm: 'bg-rose-500',
-  maintenance: 'bg-orange-500', offline: 'bg-zinc-500',
+  online: 'bg-status-online', warning: 'bg-status-warning', alarm: 'bg-status-alarm',
+  maintenance: 'bg-status-maintenance', offline: 'bg-status-offline',
 };
 
 export default function MapPage() {
@@ -76,14 +76,14 @@ export default function MapPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-6 pb-4">
-        <h1 className="text-3xl font-bold text-zinc-50 mb-2">Карта месторождения</h1>
-        <p className="text-zinc-400 text-sm">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-zinc-50 tracking-tight">Карта месторождения</h1>
+        <p className="text-sm text-zinc-400 mt-1">
           Ромашкинское нефтяное месторождение • 3 куста скважин • {wells.length} скважин в работе
         </p>
       </div>
 
-      <div className="px-6 pb-4">
+      <div className="pb-4">
         <div className="flex gap-4 flex-wrap p-3 bg-zinc-900/50 rounded-xl border border-zinc-800">
           {Object.entries(statusLabels).map(([key, label]) => (
             <div key={key} className="flex items-center gap-2 text-xs text-zinc-300">
@@ -95,7 +95,7 @@ export default function MapPage() {
         </div>
       </div>
 
-      <div className="flex-1 px-6 pb-6 min-h-[500px]">
+      <div className="flex-1 min-h-[600px]">
         <div className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
           <MapContainer
             center={center} zoom={11}

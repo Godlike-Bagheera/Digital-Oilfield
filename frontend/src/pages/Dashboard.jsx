@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import WellCard from '../components/WellCard.jsx';
 import AlertBanner from '../components/AlertBanner.jsx';
 import { getWells, getAlerts } from '../services/api.js';
+import { SearchX } from 'lucide-react';
 
 export default function Dashboard() {
   const [wells, setWells] = useState([]);
@@ -58,13 +59,10 @@ export default function Dashboard() {
     return true;
   });
 
-  // Статистика по индексу здоровья
-  const withHi = wells.filter((w) => w.latest_telemetry);
-  const normalCount = withHi.filter((w) => w.latest_telemetry.health_index >= 90).length;
-  const warningCount = withHi.filter(
-    (w) => w.latest_telemetry.health_index >= 60 && w.latest_telemetry.health_index < 90
-  ).length;
-  const alarmCount = withHi.filter((w) => w.latest_telemetry.health_index < 60).length;
+  // Статистика по статусу скважин (совпадает с бейджами на карточках)
+  const normalCount = wells.filter((w) => w.status === 'online').length;
+  const warningCount = wells.filter((w) => w.status === 'warning').length;
+  const alarmCount = wells.filter((w) => w.status === 'alarm' || w.status === 'maintenance').length;
 
   const resetFilters = () => {
     setFilters({ cdng: 'all', status: 'all' });
@@ -100,12 +98,10 @@ export default function Dashboard() {
   return (
     <div className="animate-fade-in mx-auto max-w-7xl">
       {/* Заголовок страницы + LIVE-индикатор */}
-      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-zinc-50">
-            Панель мониторинга
-          </h2>
-          <p className="mt-1 text-sm text-zinc-400">
+          <h1 className="text-2xl font-bold text-zinc-50 tracking-tight">Панель мониторинга</h1>
+          <p className="text-sm text-zinc-400 mt-1">
             Контроль нефтепромыслового оборудования в режиме реального времени
           </p>
         </div>
@@ -187,7 +183,7 @@ export default function Dashboard() {
           <div className="flex items-end">
             <button
               onClick={resetFilters}
-              className="rounded-lg border border-zinc-800 bg-[#09090b] px-6 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-[#121215] hover:text-zinc-50"
+              className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             >
               Сбросить
             </button>
@@ -204,7 +200,11 @@ export default function Dashboard() {
 
       {/* Список скважин */}
       {filteredWells.length === 0 ? (
-        <div className="py-20 text-center text-zinc-500">Нет скважин</div>
+        <div className="rounded-2xl border border-dashed border-zinc-800 py-16 text-center text-zinc-500">
+          <SearchX size={36} className="mx-auto mb-3 text-zinc-600" />
+          <p className="text-sm text-zinc-300">Скважины не найдены</p>
+          <p className="mt-1 text-xs text-zinc-600">Измените параметры поиска или сбросьте фильтры</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredWells.map((well) => (

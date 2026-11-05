@@ -6,6 +6,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Единая палитра статусов скважин (используется в tailwind: status.*) */
+:root {
+  --status-online: #10b981;      /* изумрудный — в работе */
+  --status-warning: #f59e0b;     /* янтарный — внимание */
+  --status-alarm: #ef4444;       /* красный — авария */
+  --status-maintenance: #f97316; /* оранжевый — в ремонте */
+  --status-offline: #6b7280;     /* серый — офлайн */
+}
+
 * {
   margin: 0;
   padding: 0;

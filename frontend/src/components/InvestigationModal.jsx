@@ -12,13 +12,14 @@ import {
   Area,
   AreaChart,
 } from 'recharts';
+import { Search, X, AlertTriangle } from 'lucide-react';
 
 const PARAM_OPTIONS = [
-  { key: 'current', label: '⚡ Ток (А)', color: '#3b82f6' },
-  { key: 'casing_pressure', label: '📊 Затрубное (МПа)', color: '#ef4444' },
-  { key: 'temperature', label: '🌡️ Температура (°C)', color: '#eab308' },
+  { key: 'current', label: 'Ток (А)', color: '#3b82f6' },
+  { key: 'casing_pressure', label: 'Затрубное (МПа)', color: '#ef4444' },
+  { key: 'temperature', label: 'Температура (°C)', color: '#eab308' },
   { key: 'flow_rate_oil', label: 'Дебит нефти (т/сут)', color: '#22c55e' },
-  { key: 'water_cut', label: '💦 Обводнённость (%)', color: '#06b6d4' },
+  { key: 'water_cut', label: 'Обводнённость (%)', color: '#06b6d4' },
 ];
 
 const STATUS_LABELS = {
@@ -106,7 +107,7 @@ const AnomalyTooltip = ({ active, payload, anomalies, paramKey }) => {
       </p>
       {pointAnomalies.map((a, i) => (
  <div key={i} className="mt-2 pt-2 border-t border-red-900/60 text-red-400">
- <p className="font-semibold">⚠️ Аномалия (макс z-score: {Number(a.z_score_max ?? 0).toFixed(2)})</p>
+ <p className="font-semibold">Аномалия (макс z-score: {Number(a.z_score_max ?? 0).toFixed(2)})</p>
  <p className="text-xs text-zinc-300">
             Значения: {Number(a.min_value ?? 0).toFixed(2)}–{Number(a.max_value ?? 0).toFixed(2)} | Длительность: {a.duration_minutes || 0} мин. | Точек: {a.count || 0}
           </p>
@@ -216,15 +217,22 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
     >
  <div className="w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-2xl border border-zinc-800/80 bg-[#121215]/95 p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-xl">
         {/* Заголовок модалки */}
- <div className="flex justify-between items-center mb-4">
- <h2 className="text-2xl font-bold">🔍 Расследование инцидента</h2>
-                <p className="mt-1 text-sm text-zinc-400">Данные на момент инцидента (срез за 24 часа до аварии)</p>
+ <div className="flex justify-between items-start mb-6">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-400">
+              <Search size={20} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-zinc-50">Расследование инцидента</h2>
+              <p className="mt-1 text-sm text-zinc-400">Данные на момент инцидента (срез за 24 часа до аварии)</p>
+            </div>
+          </div>
           <button
             onClick={onClose}
- className="text-zinc-400 hover:text-white text-2xl leading-none px-2"
+            className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
             aria-label="Закрыть"
           >
-            ×
+            <X size={20} />
           </button>
         </div>
 
@@ -305,11 +313,11 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
  <div className="mb-6 rounded-xl border border-zinc-800/80 bg-[#09090b]/50 p-4">
  <div className="flex justify-between items-center mb-3">
  <h3 className="font-bold">
-                  📈 {currentOption?.label} — последние 24 часа
+                  {currentOption?.label} — последние 24 часа
                 </h3>
  <span className="text-sm text-red-400">
                   {anomalyEvents.length > 0
-                    ? `⚠️ Событий аномалий: ${anomalyEvents.length} (красные зоны)`
+                    ? `Событий аномалий: ${anomalyEvents.length} (красные зоны)`
                     : 'Аномалий по параметру не обнаружено'}
                 </span>
               </div>
@@ -384,7 +392,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
 
             {/* График индекса здоровья с порогами 90/60/30 */}
  <div className="mb-6 rounded-xl border border-zinc-800/80 bg-[#09090b]/50 p-4">
- <h3 className="font-bold mb-3">💚 Индекс здоровья за 24 часа</h3>
+ <h3 className="font-bold mb-3">Индекс здоровья за 24 часа</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={hiData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <defs>
@@ -436,7 +444,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
             {/* Сводка по событиям-аномалиям (интервалы, а не 300 точек) */}
  <div className="mb-6">
  <h3 className="font-bold mb-2">
-                ⚠️ Обнаруженные события аномалий (|z| &gt; 2): {anomalies.length}
+                Обнаруженные события аномалий (|z| &gt; 2): {anomalies.length}
               </h3>
               {anomalyEvents.length > 0 ? (
  <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -474,7 +482,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
             {/* Алерты за 24 часа */}
  <div className="mb-4">
  <h3 className="font-bold mb-2">
-                🚨 Алерты за 24 часа: {(data.alerts_24h || []).length}
+                Алерты за 24 часа: {(data.alerts_24h || []).length}
               </h3>
               {(data.alerts_24h || []).length > 0 ? (
  <div className="space-y-2 max-h-56 overflow-y-auto">
@@ -493,11 +501,9 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-semibold">
-                              {group.alert_type === 'critical'
-                                ? '🔴'
-                                : group.alert_type === 'warning'
-                                ? '🟡'
-                                : '🔵'}{' '}
+                              <span className={`mr-2 inline-block h-2 w-2 rounded-full ${
+                                group.alert_type === 'critical' ? 'bg-rose-500' : group.alert_type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
+                              }`} />
                               {group.message}
                             </span>
                             {group.count > 1 && (
@@ -509,7 +515,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                           <p className="text-xs text-zinc-400">
                             {group.parameter}: {Number(group.value).toFixed(2)} (порог:{' '}
                             {Number(group.threshold).toFixed(2)})
-                            {!group.is_active && <span className="ml-2 text-green-500">✓ закрыт</span>}
+                            {!group.is_active && <span className="ml-2 text-emerald-500">закрыт</span>}
                           </p>
                         </div>
                         <div className="text-right text-xs text-zinc-500 whitespace-nowrap">
@@ -529,7 +535,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
 
             {/* Телеметрия — итоговая строка */}
  <div className="text-sm text-zinc-400 border-t border-zinc-800/80 pt-3">
-              📊 Телеметрия за 24 часа: {chartData.length} записей
+              Телеметрия за 24 часа: {chartData.length} записей
               {chartData.length > 0 && (
                 <>
                   {' '}

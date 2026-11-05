@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
 export default function AlertBanner({ alerts }) {
   const [visible, setVisible] = React.useState(true);
@@ -29,7 +30,7 @@ export default function AlertBanner({ alerts }) {
  className="px-2 text-lg leading-none text-rose-400/70 transition-colors hover:text-rose-300"
         title="Закрыть"
       >
-        ✕
+        <X size={16} />
       </button>
     </div>
   );

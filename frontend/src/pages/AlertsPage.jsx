@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom'; // Ссылки на страницы скважин
 import api from '../services/api';
 import InvestigationModal from '../components/InvestigationModal';
+import { Inbox, Search } from 'lucide-react';
 
 // Страница активных алертов — данные через axios (единый api-клиент проекта)
 export default function AlertsPage() {
@@ -59,19 +60,26 @@ export default function AlertsPage() {
 
   return (
     <div className="animate-fade-in-up">
-      <h1 className="text-3xl font-bold mb-6 text-zinc-50">Активные алерты</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-zinc-50 tracking-tight">Активные алерты</h1>
+        <p className="text-sm text-zinc-400 mt-1">
+          Незакрытые аварии и предупреждения по всем скважинам · {alerts.length} шт.
+        </p>
+      </div>
       <div className="space-y-3">
         {alerts.length === 0 && (
-          <div className="text-center py-12 rounded-2xl border border-emerald-500/20 bg-emerald-500/10">
-            <div className="text-5xl mb-3">✅</div>
-            <p className="text-emerald-400 text-lg">Нет активных алертов</p>
-            <p className="text-zinc-500 text-sm mt-2">Все системы работают нормально</p>
+          <div className="text-center py-12 text-zinc-500 rounded-2xl border border-dashed border-zinc-800">
+            <Inbox size={36} className="mx-auto mb-3 text-zinc-600" />
+            <p className="text-sm text-zinc-300">Активных алертов нет</p>
+            <p className="text-xs text-zinc-600 mt-1">Все скважины работают в штатном режиме</p>
           </div>
         )}
         {alerts.map((alert) => (
           <div
             key={alert.id}
-            className="rounded-xl border border-zinc-800/80 bg-[#121215] p-4 shadow-lg ring-1 ring-white/5 hover:border-zinc-700 transition-colors"
+            className={`rounded-xl border border-zinc-800/80 border-l-4 bg-[#121215] p-4 shadow-lg ring-1 ring-white/5 transition-all duration-200 hover:border-zinc-700 hover:shadow-xl ${
+              alert.alert_type === 'critical' ? 'border-l-status-alarm' : alert.alert_type === 'warning' ? 'border-l-status-warning' : 'border-l-blue-500'
+            }`}
           >
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1">
@@ -102,15 +110,16 @@ export default function AlertsPage() {
                       : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                   }`}
                 >
-                  {alert.alert_type}
+                  {alert.alert_type === 'critical' ? 'Критический' : alert.alert_type === 'warning' ? 'Предупреждение' : 'Предиктивный'}
                 </span>
                 {/* Кнопка открывает модалку расследования для конкретного алерта */}
                 <button
                   onClick={() => setSelectedAlert(alert)}
                   disabled={!alert.wellId}
-                  className="rounded-lg border border-zinc-700 bg-[#121215]/60 px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  🔍 Расследовать
+                  <Search size={14} />
+                  Расследовать
                 </button>
               </div>
             </div>
