@@ -130,21 +130,21 @@ export default function WellDetail() {
 
   if (loading) {
     return (
- <div className="animate-fade-in">
+      <div className="animate-fade-in">
         {/* Skeleton шапки */}
- <div className="mb-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
- <div className="space-y-3">
- <div className="h-8 w-48 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
- <div className="h-4 w-64 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+        <div className="mb-6 flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
+          <div className="space-y-3">
+            <div className="h-8 w-48 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+            <div className="h-4 w-64 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
           </div>
- <div className="h-28 w-28 animate-pulse rounded-full border border-zinc-800/80 bg-[#121215]" />
+          <div className="h-28 w-28 animate-pulse rounded-full border border-zinc-800/80 bg-[#121215]" />
         </div>
         {/* Skeleton графиков */}
- <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {[...Array(8)].map((_, i) => (
- <div key={i} className="rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
- <div className="mb-4 h-6 w-1/3 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
- <div className="h-[300px] animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+            <div key={i} className="rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg">
+              <div className="mb-4 h-6 w-1/3 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+              <div className="h-[300px] animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
             </div>
           ))}
         </div>
@@ -154,12 +154,12 @@ export default function WellDetail() {
 
   if (error) {
     return (
- <div className="mx-auto mt-10 max-w-lg rounded-xl border border-rose-500/20 bg-rose-500/10 p-6 text-center">
- <p className="mb-4 text-sm text-rose-400">{error}</p>
+      <div className="mx-auto mt-10 max-w-lg rounded-xl border border-rose-500/20 bg-rose-500/10 p-6 text-center">
+        <p className="mb-4 text-sm text-rose-400">{error}</p>
         <button
           type="button"
           onClick={() => { setLoading(true); fetchWell(id); }}
- className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-500"
+          className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-rose-500"
         >
           Повторить
         </button>
@@ -169,9 +169,9 @@ export default function WellDetail() {
 
   if (!well) {
     return (
- <div className="mt-10 text-center text-zinc-400">
- <p className="mb-4 text-xl">Скважина не найдена</p>
- <button type="button" onClick={() => navigate('/')} className="text-blue-400 underline-offset-4 hover:underline">
+      <div className="mt-10 text-center text-zinc-400">
+        <p className="mb-4 text-xl">Скважина не найдена</p>
+        <button type="button" onClick={() => navigate('/')} className="text-blue-400 underline-offset-4 hover:underline">
           <ArrowLeft size={14} className="mr-1 inline" />Назад к списку
         </button>
       </div>
@@ -200,10 +200,17 @@ export default function WellDetail() {
 
       const data = await response.json();
 
-      // ВАЖНО: подтягиваем СВЕЖИЕ данные с сервера вместо локального setWell
-      await fetchWell(well.id);
-      await fetchTelemetry(well.id, period);
+      // МГНОВЕННО обновляем статус и health_index из ответа сервера
+      if (data.well) {
+        setWell(data.well);
+      }
+
+      // Оповещаем Dashboard, что скважина обновлена
+      window.dispatchEvent(new CustomEvent('well-updated', { detail: { wellId: well.id } }));
+
+      // В фоне подтягиваем остальное (алерты, графики)
       await fetchAlerts(well.id);
+      await fetchTelemetry(well.id, period);
 
       // Очищаем предиктивные алерты до следующего обновления телеметрии
       setPredictions([]);
@@ -356,14 +363,14 @@ export default function WellDetail() {
       </div>
 
       {/* Переключатель периода */}
- <div className="mb-6">
+      <div className="mb-6">
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 
       {/* Предиктивные алерты */}
       {predictions.length > 0 && (
- <div className="mb-6">
- <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-zinc-50"><TrendingUp size={20} className="text-blue-400" /> Предиктивные алерты</h2>
+        <div className="mb-6">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold tracking-tight text-zinc-50"><TrendingUp size={20} className="text-blue-400" /> Предиктивные алерты</h2>
           {predictions.map((pred, idx) => (
             <PredictiveAlert key={idx} prediction={pred} />
           ))}
@@ -371,7 +378,7 @@ export default function WellDetail() {
       )}
 
       {/* Сетка графиков */}
- <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
         {charts.map((c) => (
           <TelemetryChart
             key={c.key}
@@ -388,8 +395,8 @@ export default function WellDetail() {
       </div>
 
       {/* Алерты: активные / история + пагинация */}
- <section className="mb-8">
- <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Алерты</h2>
+      <section className="mb-8">
+        <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Алерты</h2>
         {/* Табы: Активные / Вся история + календарь фильтрации истории */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex gap-2">
@@ -451,9 +458,9 @@ export default function WellDetail() {
       </section>
 
       {/* Действия */}
- <section className="mb-8">
- <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Действия</h2>
- <div className="flex flex-wrap gap-3">
+      <section className="mb-8">
+        <h2 className="mb-4 text-xl font-semibold tracking-tight text-zinc-50">Действия</h2>
+        <div className="flex flex-wrap gap-3">
           {exportActions.map(({ key, label, Icon, run }) => (
             <button
               key={key}
