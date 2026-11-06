@@ -163,23 +163,29 @@ class Command(BaseCommand):
 
             if role == ROLE_ALARM:
                 data = self._alarm_data()
+                health_idx = 0
             elif role == ROLE_PREDICTIVE:
                 data = self._predictive_data(elapsed_minutes)
+                health = calculate_health_index(data)
+                health_idx = health['health_index']
             elif role == ROLE_WOBBLE:
                 data = self._wobble_data(elapsed_minutes)
+                health = calculate_health_index(data)
+                health_idx = health['health_index']
             else:
                 data = self._normal_data()
+                health = calculate_health_index(data)
+                health_idx = health['health_index']
 
-            health = calculate_health_index(data)
             TelemetryData.objects.create(
                 well=well,
-                health_index=health['health_index'],
+                health_index=health_idx,
                 **data
             )
 
-            # Обновляем статус только для "живых" скважин
+            # Обновляем статус только для "живых" скважин, передавая health_idx
             if role != ROLE_ALARM:
-                new_status = self._status_from_data(data, role)
+                new_status = self._status_from_data(data, role, health_idx)
                 if well.status != new_status:
                     well.status = new_status
                     well.save(update_fields=['status'])
@@ -225,8 +231,22 @@ class Command(BaseCommand):
             data['temperature'] = round(85.0 + random.uniform(0, 3), 2)  # warning, но не critical
         return data
 
-    def _status_from_data(self, data, role):
-        """Определяет статус по данным. Упрощённо — без генерации алертов."""
+    def _status_from_data(self, data, role, health_index):
+        """
+        Определяет статус по данным с приоритетом Health Index.
+        
+        Приоритет:
+        1. Health Index < 30 → alarm (даже если параметры формально в норме)
+        2. Health Index < 60 → warning
+        3. Далее проверяем специфичные параметры для ролей
+        """
+        # 1. ПРИОРИТЕТ: общее здоровье скважины
+        if health_index < 30:
+            return Well.Status.ALARM
+        if health_index < 60:
+            return Well.Status.WARNING
+
+        # 2. Далее проверяем специфичные роли
         if role == ROLE_PREDICTIVE:
             if data['water_cut'] >= PREDICTIVE_CRITICAL:
                 return Well.Status.ALARM
@@ -235,4 +255,5 @@ class Command(BaseCommand):
         if role == ROLE_WOBBLE:
             if data['temperature'] >= 85:
                 return Well.Status.WARNING
+        
         return Well.Status.ONLINE
