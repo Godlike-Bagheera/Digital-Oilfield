@@ -505,7 +505,7 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                               <span className={`mr-2 inline-block h-2 w-2 rounded-full ${
                                 group.alert_type === 'critical' ? 'bg-rose-500' : group.alert_type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
                               }`} />
-                              {group.message}
+                              {humanizeMessage(group.message)}
                             </span>
                             {group.count > 1 && (
                               <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full font-medium border border-red-500/30 whitespace-nowrap">
