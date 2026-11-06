@@ -13,6 +13,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { Search, X, AlertTriangle } from 'lucide-react';
+import { getParameterLabel, formatParameterValue, humanizeMessage } from '../utils/parameters';
 
 const PARAM_OPTIONS = [
   { key: 'current', label: 'Ток (А)', color: '#3b82f6' },
@@ -513,8 +514,8 @@ const InvestigationModal = ({ isOpen, onClose, wellId, alertId }) => {
                             )}
                           </div>
                           <p className="text-xs text-zinc-400">
-                            {group.parameter}: {Number(group.value).toFixed(2)} (порог:{' '}
-                            {Number(group.threshold).toFixed(2)})
+                            {getParameterLabel(group.parameter)}: {formatParameterValue(group.parameter, group.value)} (порог:{' '}
+                            {formatParameterValue(group.parameter, group.threshold)})
                             {!group.is_active && <span className="ml-2 text-emerald-500">закрыт</span>}
                           </p>
                         </div>
