@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Area, ComposedChart,
 } from 'recharts';
+import { downsample } from '../utils/downsample';
 
 function formatTime(ts, period) {
   const d = new Date(ts);
@@ -30,9 +31,12 @@ function CustomTooltip({ active, payload }) {
   );
 }
 
-export default function TelemetryChart({ title, unit, data, color, trainingMode, trainingTip, icon, period = '24h' }) {
+function TelemetryChart({ title, unit, data, color, trainingMode, trainingTip, icon, period = '24h' }) {
   const [showTip, setShowTip] = useState(false);
   const tipRef = useRef(null);
+
+  // Прореживание до 240 точек: убирает лаги, сохраняет пики аварий
+  const chartData = useMemo(() => downsample(data, 240, 'value'), [data]);
 
   useEffect(() => {
     if (!showTip) return;
@@ -45,7 +49,7 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
     return () => document.removeEventListener('mousedown', handler);
   }, [showTip]);
 
-  const current = data && data.length ? data[data.length - 1].value : null;
+  const current = chartData && chartData.length ? chartData[chartData.length - 1].value : null;
 
   return (
     <div className="animate-fade-in-up relative rounded-2xl border border-zinc-800/80 bg-[#121215] p-6 shadow-lg ring-1 ring-white/5 backdrop-blur-md transition-all duration-300 hover:border-zinc-700 hover:shadow-2xl hover:ring-white/10">
@@ -75,7 +79,7 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
             onMouseEnter={() => { if (window.matchMedia('(hover: hover)').matches) setShowTip(true); }}
             onMouseLeave={() => { if (window.matchMedia('(hover: hover)').matches) setShowTip(false); }}
             onClick={() => setShowTip((v) => !v)}
- className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500 font-bold text-white transition hover:bg-blue-600"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500 font-bold text-white transition hover:bg-blue-600"
           >
             ?
           </button>
@@ -108,9 +112,9 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
       )}
 
       {/* График */}
-      {data && data.length ? (
+      {chartData && chartData.length ? (
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={data} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
             <defs>
               <linearGradient id={`gradient-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={color} stopOpacity={0.3} />
@@ -165,3 +169,6 @@ export default function TelemetryChart({ title, unit, data, color, trainingMode,
     </div>
   );
 }
+
+// Мемоизация: компонент не перерисовывается без необходимости
+export default React.memo(TelemetryChart);
