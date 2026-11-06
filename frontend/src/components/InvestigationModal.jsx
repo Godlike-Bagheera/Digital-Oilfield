@@ -104,7 +104,7 @@ const AnomalyTooltip = ({ active, payload, anomalies, paramKey }) => {
  <div className="max-w-xs rounded-lg border border-zinc-800 bg-[#18181b] p-3 text-sm shadow-xl">
  <p className="text-zinc-400 mb-1">{formatTime(ts)}</p>
  <p className="font-bold" style={{ color: point.color || '#fff' }}>
-        {paramKey}: {Number(point.value).toFixed(2)}
+        {getParameterLabel(paramKey)}: {formatParameterValue(paramKey, point.value)}
       </p>
       {pointAnomalies.map((a, i) => (
  <div key={i} className="mt-2 pt-2 border-t border-red-900/60 text-red-400">
