@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { getParameterLabel, formatParameterValue, humanizeMessage } from '../utils/parameters';
 
 /**
  * Глобальные toast-уведомления о новых алертах (подключены в App — работают на всех страницах).
@@ -26,7 +27,7 @@ function showSingleToast(alert) {
       <div className="mb-1 font-semibold">
         {isCritical ? 'Критическая авария' : 'Предупреждение'} · Скважина №{wellNumberOf(alert)}
       </div>
-      <div className="text-sm opacity-90">{alert.message}</div>
+      <div className="text-sm opacity-90">{humanizeMessage(alert.message)}</div>
       <div className="mt-1 text-xs opacity-60">{formatTime(alert.created_at)}</div>
     </div>,
     { id: `alert-${alert.id}`, duration: isCritical ? 8000 : 5000 }
@@ -40,7 +41,7 @@ function showWellGroupToast(wellNum, alerts) {
     <div>
       <div className="mb-1 font-semibold">Скважина №{wellNum}: {alerts.length} проблемы</div>
       <ul className="list-disc space-y-0.5 pl-4 text-sm opacity-90">
-        {alerts.map((a) => <li key={a.id}>{a.message}</li>)}
+        {alerts.map((a) => <li key={a.id}>{humanizeMessage(a.message)}</li>)}
       </ul>
     </div>,
     { id: `well-${wellNum}`, duration: 8000 }
