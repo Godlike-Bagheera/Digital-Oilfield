@@ -9,7 +9,7 @@
 from django.utils import timezone
 
 from wells.models import Alert, Well
-
+from wells.constants import get_parameter_label, get_parameter_unit
 # КРИТИЧЕСКИЕ пороги: (параметр, сообщение-шаблон, значение порога)
 CRITICAL_RULES = [
     ('current', lambda v: v < 5, 5, 'Критическое падение тока двигателя (обрыв штанг?)'),
@@ -77,7 +77,7 @@ def check_and_create_alerts(well, telemetry_data):
                     well=well,
                     alert_type=alert_type,
                     parameter=param,
-                    message=f'{msg_tpl}: {param} = {round(value, 2)} (порог {threshold})',
+                    message=f'{msg_tpl}: {get_parameter_label(param)} = {round(value, 2)} {get_parameter_unit(param)} (порог {threshold} {get_parameter_unit(param)})',
                     value=value,
                     threshold=threshold,
                     is_active=True,
