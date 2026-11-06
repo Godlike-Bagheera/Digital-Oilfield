@@ -37,6 +37,7 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Первоначальная загрузка + автообновление каждые 3 секунды
   useEffect(() => {
     fetchWells();
     fetchAlerts();
@@ -46,6 +47,33 @@ export default function Dashboard() {
       fetchAlerts();
     }, 3000);
     return () => clearInterval(interval);
+  }, [fetchWells, fetchAlerts]);
+
+  // Мгновенное обновление дашборда, когда скважину починили на другой странице.
+  // WellDetail кидает событие 'well-updated' после успешного ремонта —
+  // Dashboard ловит его и сразу делает refetch, чтобы статус и health_index
+  // сменились одновременно (без окна "Авария + 90%").
+  useEffect(() => {
+    const onWellUpdated = () => {
+      fetchWells();
+      fetchAlerts();
+    };
+    window.addEventListener('well-updated', onWellUpdated);
+
+    // Дополнительно: обновляем при возврате фокуса на вкладку,
+    // чтобы защититься от рассинхрона после переключения вкладок браузера.
+    const onVisibility = () => {
+      if (!document.hidden) {
+        fetchWells();
+        fetchAlerts();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      window.removeEventListener('well-updated', onWellUpdated);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [fetchWells, fetchAlerts]);
 
   // Уникальные ЦДНГ из данных (Set гарантирует отсутствие дубликатов)
