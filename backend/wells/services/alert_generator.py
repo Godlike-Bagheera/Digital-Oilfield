@@ -5,11 +5,11 @@
 (critical / warning), обновляет статус скважины (worst case wins) и
 закрывает активные алерты, если все параметры пришли в норму.
 """
-
 from django.utils import timezone
 
 from wells.models import Alert, Well
 from wells.constants import get_parameter_label, get_parameter_unit
+
 # КРИТИЧЕСКИЕ пороги: (параметр, сообщение-шаблон, значение порога)
 CRITICAL_RULES = [
     ('current', lambda v: v < 5, 5, 'Критическое падение тока двигателя (обрыв штанг?)'),
@@ -42,12 +42,13 @@ _STATUS_PRIORITY = {
 }
 
 
-def check_and_create_alerts(well, telemetry_data):
+def check_and_create_alerts(well, telemetry_data, health_index=100):
     """
     Проверяет пороговые значения и создаёт алерты.
 
     :param well: экземпляр Well
     :param telemetry_data: dict с параметрами телеметрии
+    :param health_index: агрегированный индекс здоровья (0-100)
     :return: (created_alerts: list[Alert], new_status: str)
     """
     created_alerts = []
@@ -113,6 +114,13 @@ def check_and_create_alerts(well, telemetry_data):
         # завершается только вручную оператором. Для online/warning работает worst case wins.
         if well.status == Well.Status.MAINTENANCE:
             new_status = well.status
+
+    # ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Health Index имеет приоритет над отдельными параметрами
+    # Это предотвращает ложно-положительные "онлайн" статусы при деградации оборудования
+    if health_index < 30 and well.status != Well.Status.MAINTENANCE:
+        new_status = 'alarm'
+    elif health_index < 60 and new_status == 'online' and well.status != Well.Status.MAINTENANCE:
+        new_status = 'warning'
 
     # Обновляем статус скважины (не трогаем offline вручную установленный? worst case wins)
     current_priority = _STATUS_PRIORITY.get(well.status, 0)
