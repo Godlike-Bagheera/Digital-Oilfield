@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2, Search } from 'lucide-react';
+import { getParameterLabel, formatParameterValue, humanizeMessage } from '../utils/parameters';
 
 function getTimeAgo(iso) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -41,11 +42,11 @@ export default function AlertList({ alerts, onInvestigate }) {
  <div className="w-1.5 shrink-0" style={{ backgroundColor: meta.bar }} />
  <div className="flex-1 p-4">
  <p className="mb-1 flex items-center gap-2 text-sm font-semibold text-zinc-50">
-                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: meta.bar }} /> {alert.message}
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: meta.bar }} /> {humanizeMessage(alert.message)}
               </p>
  <p className="mb-2 text-xs text-zinc-400">
- Параметр: <span className="font-medium text-zinc-300">{alert.parameter}</span> ·
- Значение: <span className="font-medium text-zinc-300">{alert.value}</span> (порог {alert.threshold}) ·
+Параметр: <span className="font-medium text-zinc-300">{getParameterLabel(alert.parameter)}</span> ·
+Значение: <span className="font-medium text-zinc-300">{formatParameterValue(alert.parameter, alert.value)}</span> (порог {formatParameterValue(alert.parameter, alert.threshold)}) ·
  Сработал: <span className="font-medium text-zinc-300">{getTimeAgo(alert.created_at)}</span>
               </p>
               <button
