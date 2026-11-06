@@ -2,6 +2,7 @@
 from datetime import timedelta
 
 from django.utils import timezone
+from django.db import transaction
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny  # разрешаем анонимный доступ (фикс 403)
 from rest_framework.response import Response
@@ -41,10 +42,11 @@ class WellViewSet(ModelViewSet):
         period = request.query_params.get('period', '24h')
         delta = PERIOD_MAP.get(period, PERIOD_MAP['24h'])
         since = timezone.now() - delta
-        records = (
-            well.telemetry.filter(timestamp__gte=since)
-            .order_by('timestamp')
-        )
+        records = list(well.telemetry.filter(timestamp__gte=since).order_by('timestamp'))
+        # Предохранитель для длинных периодов: не отдаём больше 2000 точек
+        if len(records) > 2000:
+            step = len(records) // 2000
+            records = records[::step]
         serializer = TelemetryDataSerializer(records, many=True)
         return Response(serializer.data)
 
@@ -109,40 +111,38 @@ class WellViewSet(ModelViewSet):
 
         well = self.get_object()
 
-        # 1. Меняем статус на online
-        well.status = Well.Status.ONLINE
-        well.save(update_fields=['status'])
+        with transaction.atomic():
+            # 1. Меняем статус на online
+            well.status = Well.Status.ONLINE
+            well.save(update_fields=['status'])
 
-        # 2. Закрываем все активные алерты этой скважины
-        closed_count = Alert.objects.filter(
-            well=well,
-            is_active=True,
-        ).update(is_active=False, resolved_at=timezone.now())
+            # 2. Закрываем все активные алерты этой скважины
+            closed_count = Alert.objects.filter(
+                well=well,
+                is_active=True,
+            ).update(is_active=False, resolved_at=timezone.now())
 
-        # 3. Эталонная телеметрия: параметры в идеальных диапазонах
-        # health_calculator.PARAMETER_CONFIG:
-        #   current ideal (40,50), casing ideal (5,8), temperature ideal (40,60),
-        #   flow_rate_oil ideal >=20, water_cut ideal <=50, stroke_rate ideal (6,8)
-        perfect_data = {
-            'current': 45.0,
-            'casing_pressure': 6.5,
-            'discharge_pressure': 12.0,
-            'temperature': 50.0,
-            'flow_rate_liquid': 80.0,
-            'flow_rate_oil': 30.0,
-            'water_cut': 45.0,
-            'stroke_rate': 7.0,
-        }
+            # 3. Эталонная телеметрия: параметры в идеальных диапазонах
+            perfect_data = {
+                'current': 45.0,
+                'casing_pressure': 6.5,
+                'discharge_pressure': 12.0,
+                'temperature': 50.0,
+                'flow_rate_liquid': 80.0,
+                'flow_rate_oil': 30.0,
+                'water_cut': 45.0,
+                'stroke_rate': 7.0,
+            }
 
-        health_result = calculate_health_index(perfect_data)
-        health_index = (health_result.get('health_index', 100)
-                        if isinstance(health_result, dict) else 100)
+            health_result = calculate_health_index(perfect_data)
+            health_index = (health_result.get('health_index', 100)
+                            if isinstance(health_result, dict) else 100)
 
-        ideal_telemetry = TelemetryData.objects.create(
-            well=well,
-            health_index=health_index,
-            **perfect_data,
-        )
+            ideal_telemetry = TelemetryData.objects.create(
+                well=well,
+                health_index=health_index,
+                **perfect_data,
+            )
 
         # 4. Свежие данные скважины + новая телеметрия в ответе
         well.refresh_from_db()
