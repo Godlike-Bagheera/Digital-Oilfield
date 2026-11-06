@@ -2,13 +2,7 @@
 Демо-симулятор для защиты проекта.
 ОДНА команда: python manage.py simulate_demo
 
-Сценарий:
-- 0-15 сек: все скважины работают нормально
-- 15 сек: скв. 108 → АВАРИЯ (обрыв штанг) + алерт + уведомление
-- ~3 мин: скв. 109 → warning (обводнённость 90%)
-- ~5 мин: скв. 109 → ПРЕДИКТИВНЫЙ алерт (накопился тренд)
-- ~8 мин: скв. 109 → АВАРИЯ (обводнённость 97%)
-- 110: каждые 2 мин warning-скачки температуры
+ВСЕ события имеют toast-уведомления!
 """
 import random
 import time
@@ -17,7 +11,6 @@ from django.utils import timezone
 
 from wells.models import Well, TelemetryData, Alert
 from wells.services.health_calculator import calculate_health_index
-from wells.services.alert_generator import check_and_create_alerts
 
 BASE_VALUES = {
     'current': 45.0, 'casing_pressure': 6.5, 'discharge_pressure': 12.0,
@@ -31,22 +24,21 @@ WOBBLE_WELL = '110'
 
 WC_WARNING = 90.0
 WC_CRITICAL = 97.0
-# Рост от 45% до 97% за 8 минут (480 сек), но начинаем с 0 сек
 WC_GROWTH_PER_SEC = (WC_CRITICAL - 45.0) / (8 * 60)
 
 
 class Command(BaseCommand):
-    help = 'Демо-симулятор: одна команда, всё работает само'
+    help = 'Демо-симулятор: все события с уведомлениями'
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS(
-            '🚀 Демо-симулятор запущен:\n'
+            ' Демо-симулятор запущен:\n'
             '  • 0-15 сек: все скважины работают\n'
-            '  • 15 сек: скв. 108 → АВАРИЯ (обрыв штанг)\n'
-            '  • ~3 мин: скв. 109 → warning (обводнённость 90%)\n'
-            '  • ~5 мин: скв. 109 → ПРЕДИКТИВНЫЙ алерт\n'
-            '  • ~8 мин: скв. 109 → АВАРИЯ (обводнённость 97%)\n'
-            '  • 110: редкие warning-скачки\n'
+            '  • 15 сек: скв. 108 → АВАРИЯ (обрыв штанг) 🔔\n'
+            '  • ~3 мин: скв. 109 → WARNING (обводнённость 90%) 🔔\n'
+            '  • ~5 мин: скв. 109 → ПРЕДИКТИВНЫЙ алерт 🔔\n'
+            '  • ~8 мин: скв. 109 → АВАРИЯ (обводнённость 97%) 🔔\n'
+            '  • 110: редкие warning-скачки 🔔\n'
             'Ctrl+C для остановки.\n'
         ))
 
@@ -90,6 +82,23 @@ class Command(BaseCommand):
             well.status = 'online'
             well.save(update_fields=['status'])
 
+    def _create_alert(self, well, alert_type, parameter, message, value, threshold):
+        """Создаёт алерт с УНИКАЛЬНЫМ параметром чтобы фронтенд показал toast"""
+        # Закрываем все старые активные алерты этой скважины
+        Alert.objects.filter(well=well, is_active=True).update(
+            is_active=False, resolved_at=timezone.now()
+        )
+        # Создаём НОВЫЙ алерт (уникальный timestamp)
+        return Alert.objects.create(
+            well=well,
+            alert_type=alert_type,
+            parameter=parameter,
+            message=message,
+            value=value,
+            threshold=threshold,
+            is_active=True,
+        )
+
     def _alarm_well(self, well, elapsed):
         if elapsed < 15:
             data = {k: round(v + random.uniform(-v*0.03, v*0.03), 2) for k, v in BASE_VALUES.items()}
@@ -108,13 +117,12 @@ class Command(BaseCommand):
             if well.status != 'alarm':
                 well.status = 'alarm'
                 well.save(update_fields=['status'])
-                if not Alert.objects.filter(well=well, parameter='current', alert_type='critical', is_active=True).exists():
-                    Alert.objects.create(
-                        well=well, alert_type='critical', parameter='current',
-                        message='Критическое падение тока двигателя (обрыв штанг?): Ток двигателя = 0.0 А (порог 5 А)',
-                        value=0.0, threshold=5.0, is_active=True,
-                    )
-                    self.stdout.write(self.style.WARNING(f'  ⚠ Скважина {well.number}: АВАРИЯ (обрыв штанг)'))
+                self._create_alert(
+                    well, 'critical', 'current',
+                    'Критическое падение тока двигателя (обрыв штанг?): Ток двигателя = 0.0 А (порог 5 А)',
+                    0.0, 5.0
+                )
+                self.stdout.write(self.style.WARNING(f'  ⚠ Скважина {well.number}: АВАРИЯ (обрыв штанг) 🔔'))
 
     def _predictive_well(self, well, elapsed):
         data = {k: round(v + random.uniform(-v*0.03, v*0.03), 2) for k, v in BASE_VALUES.items()}
@@ -128,19 +136,26 @@ class Command(BaseCommand):
         wc = data['water_cut']
         if wc >= WC_CRITICAL:
             new_status = 'alarm'
+            if well.status != 'alarm':
+                well.status = 'alarm'
+                well.save(update_fields=['status'])
+                self._create_alert(
+                    well, 'critical', 'water_cut_critical',
+                    f'Критическая обводнённость продукции: Обводнённость = {wc:.1f}% (порог {WC_CRITICAL}%)',
+                    wc, WC_CRITICAL
+                )
+                self.stdout.write(self.style.ERROR(f'  🚨 Скважина {well.number}: АВАРИЯ (обводнённость {wc:.1f}%) 🔔'))
         elif wc >= WC_WARNING:
             new_status = 'warning'
-        else:
-            new_status = 'online'
-
-        if well.status != new_status:
-            well.status = new_status
-            well.save(update_fields=['status'])
-            check_and_create_alerts(well, data, health['health_index'])
-            if new_status == 'alarm':
-                self.stdout.write(self.style.ERROR(f'  🚨 Скважина {well.number}: АВАРИЯ (обводнённость {wc:.1f}%)'))
-            elif new_status == 'warning':
-                self.stdout.write(self.style.WARNING(f'  ⚠ Скважина {well.number}: WARNING (обводнённость {wc:.1f}%)'))
+            if well.status != 'warning':
+                well.status = 'warning'
+                well.save(update_fields=['status'])
+                self._create_alert(
+                    well, 'warning', 'water_cut_warning',
+                    f'Рост обводнённости продукции: Обводнённость = {wc:.1f}% (порог {WC_WARNING}%)',
+                    wc, WC_WARNING
+                )
+                self.stdout.write(self.style.WARNING(f'   Скважина {well.number}: WARNING (обводнённость {wc:.1f}%) 🔔'))
 
     def _wobble_well(self, well, elapsed):
         data = {k: round(v + random.uniform(-v*0.03, v*0.03), 2) for k, v in BASE_VALUES.items()}
@@ -151,9 +166,15 @@ class Command(BaseCommand):
         health = calculate_health_index(data)
         TelemetryData.objects.create(well=well, health_index=health['health_index'], **data)
 
-        new_status = 'warning' if data['temperature'] >= 85 else 'online'
-        if well.status != new_status:
-            well.status = new_status
+        if data['temperature'] >= 85 and well.status != 'warning':
+            well.status = 'warning'
             well.save(update_fields=['status'])
-            if new_status == 'warning':
-                check_and_create_alerts(well, data, health['health_index'])
+            self._create_alert(
+                well, 'warning', f'temp_{int(elapsed)}',
+                f'Повышенная температура оборудования: Температура = {data["temperature"]:.1f}°C (порог 85°C)',
+                data['temperature'], 85.0
+            )
+            self.stdout.write(self.style.WARNING(f'  ⚠ Скважина {well.number}: WARNING (температура {data["temperature"]:.1f}°C) 🔔'))
+        elif data['temperature'] < 85 and well.status == 'warning':
+            well.status = 'online'
+            well.save(update_fields=['status'])
