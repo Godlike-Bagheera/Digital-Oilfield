@@ -6,36 +6,34 @@ Management command: симулятор телеметрии скважин.
 и создаёт алерты.
 
 Примеры:
-    python manage.py simulate_telemetry --once
-    python manage.py simulate_telemetry --continuous --with-anomalies
+  python manage.py simulate_telemetry --once
+  python manage.py simulate_telemetry --continuous --with-anomalies
 """
-
 import random
 import time
 
 from django.core.management.base import BaseCommand
-
 from wells.models import TelemetryData, Well
 from wells.services.alert_generator import check_and_create_alerts
 from wells.services.health_calculator import calculate_health_index
 
 # Базовые значения и амплитуда случайного блуждания
 BASE_VALUES = {
-    'current':            {'base': 45.0,  'step': 5.0},
-    'casing_pressure':    {'base': 6.0,   'step': 1.0},
-    'discharge_pressure': {'base': 12.0,  'step': 2.0},
-    'temperature':        {'base': 50.0,  'step': 5.0},
-    'flow_rate_liquid':   {'base': 80.0,  'step': 10.0},
-    'flow_rate_oil':      {'base': 30.0,  'step': 5.0},
-    'water_cut':          {'base': 60.0,  'step': 5.0},
-    'stroke_rate':        {'base': 8.0,   'step': 1.0},
+    'current': {'base': 45.0, 'step': 5.0},
+    'casing_pressure': {'base': 6.0, 'step': 1.0},
+    'discharge_pressure': {'base': 12.0, 'step': 2.0},
+    'temperature': {'base': 50.0, 'step': 5.0},
+    'flow_rate_liquid': {'base': 80.0, 'step': 10.0},
+    'flow_rate_oil': {'base': 30.0, 'step': 5.0},
+    'water_cut': {'base': 60.0, 'step': 5.0},
+    'stroke_rate': {'base': 8.0, 'step': 1.0},
 }
 
 # Аномалии: name -> dict изменений параметров
 ANOMALIES = {
-    'Обрыв штанг':        {'current': 0.0, 'flow_rate_oil': 0.0},
-    'Перегрев':           {'temperature': 97.0},
-    'Падение дебита':     {'flow_rate_oil': 2.0},
+    'Обрыв штанг': {'current': 0.0, 'flow_rate_oil': 0.0},
+    'Перегрев': {'temperature': 97.0},
+    'Падение дебита': {'flow_rate_oil': 2.0},
     'Рост обводнённости': {'water_cut': 98.0},
 }
 
@@ -56,11 +54,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--once', action='store_true',
-                          help='Сгенерировать данные один раз для всех скважин и выйти')
+                            help='Сгенерировать данные один раз для всех скважин и выйти')
         parser.add_argument('--continuous', action='store_true',
-                          help='Непрерывный режим: генерация каждые 5 секунд')
+                            help='Непрерывный режим: генерация каждые 5 секунд')
         parser.add_argument('--with-anomalies', action='store_true',
-                          help='С вероятностью 5%% генерировать аномалии')
+                            help='С вероятностью 5%% генерировать аномалии')
 
     def handle(self, *args, **options):
         once = options.get('once', False)
@@ -99,14 +97,14 @@ class Command(BaseCommand):
             # перезапуска оператором через POST /api/wells/{id}/repair/ или админку.
             if well.status in [Well.Status.ALARM, Well.Status.MAINTENANCE]:
                 dead_data = {
-                    'current': 0.0,          # Ток = 0 (двигатель не работает)
+                    'current': 0.0,  # Ток = 0 (двигатель не работает)
                     'casing_pressure': 0.1,  # Давление падает до атмосферного
                     'discharge_pressure': 0.1,
-                    'temperature': 15.0,     # Остывает до температуры среды
-                    'flow_rate_liquid': 0.0, # Нет потока
-                    'flow_rate_oil': 0.0,    # Нет добычи
+                    'temperature': 15.0,  # Остывает до температуры среды
+                    'flow_rate_liquid': 0.0,  # Нет потока
+                    'flow_rate_oil': 0.0,  # Нет добычи
                     'water_cut': 0.0,
-                    'stroke_rate': 0.0,      # Нет качаний
+                    'stroke_rate': 0.0,  # Нет качаний
                 }
                 # Сохраняем телеметрию с health_index = 0 (мёртвая скважина).
                 # ВАЖНО: НЕ вызываем check_and_create_alerts — новые алерты для
@@ -139,16 +137,21 @@ class Command(BaseCommand):
                     'water_cut': round(45 + random.uniform(-3, 3), 2),
                     'stroke_rate': round(7 + random.uniform(-0.5, 0.5), 2),
                 }
+
                 # Аномалии возможны и в пост-ремонтном режиме, иначе после первого
                 # ремонта скважина навсегда остаётся «идеальной» и --with-anomalies не работает
                 anomaly_name = None
                 if with_anomalies and random.random() < 0.05:
                     anomaly_name, changes = random.choice(list(ANOMALIES.items()))
                     data.update(changes)
+
                 health = calculate_health_index(data)
                 record = TelemetryData.objects.create(
                     well=well, health_index=health['health_index'], **data)
-                alerts, status = check_and_create_alerts(well, data)
+
+                # ИСПРАВЛЕНО: передаём health_index для проверки статуса
+                alerts, status = check_and_create_alerts(well, data, health['health_index'])
+
                 msg = (f'Скважина №{well.number}: HI={health["health_index"]} '
                        f'(пост-ремонтный режим, база = эталонная телеметрия)')
                 if anomaly_name:
@@ -171,7 +174,6 @@ class Command(BaseCommand):
                 data.update(changes)
 
             health = calculate_health_index(data)
-
             record = TelemetryData.objects.create(
                 well=well,
                 current=data['current'],
@@ -185,7 +187,8 @@ class Command(BaseCommand):
                 health_index=health['health_index'],
             )
 
-            alerts, status = check_and_create_alerts(well, data)
+            # ИСПРАВЛЕНО: передаём health_index для проверки статуса
+            alerts, status = check_and_create_alerts(well, data, health['health_index'])
 
             msg = (f'Скважина №{well.number}: HI={health["health_index"]} '
                    f'({health["status"]}), статус={status}')
