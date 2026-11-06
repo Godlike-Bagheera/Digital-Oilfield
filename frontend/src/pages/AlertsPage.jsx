@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'; // Ссылки на страницы �
 import api from '../services/api';
 import InvestigationModal from '../components/InvestigationModal';
 import { Inbox, Search } from 'lucide-react';
+import { getParameterLabel, formatParameterValue, humanizeMessage } from '../utils/parameters';
 
 // Страница активных алертов — данные через axios (единый api-клиент проекта)
 export default function AlertsPage() {
@@ -83,7 +84,7 @@ export default function AlertsPage() {
           >
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1">
-                <h3 className="font-bold text-zinc-50 mb-1">{alert.message}</h3>
+                <h3 className="font-bold text-zinc-50 mb-1">{humanizeMessage(alert.message)}</h3>
                 <p className="text-sm text-zinc-400">
                   {/* Кликабельный переход на страницу скважины */}
                   {alert.wellId ? (
@@ -94,7 +95,7 @@ export default function AlertsPage() {
                     <span>Скважина №{alert.well?.number || '?'}</span>
                   )}
                   {' • '}
-                  {alert.parameter}: {alert.value?.toFixed(2)}
+                  {getParameterLabel(alert.parameter)}: {formatParameterValue(alert.parameter, alert.value)}
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">
                   {new Date(alert.created_at).toLocaleString('ru-RU')}
