@@ -41,11 +41,11 @@ def reset_all_wells_to_online(modeladmin, request, queryset):
 # ==================== Хелперы для цветных бейджей ====================
 
 STATUS_COLORS = {
-    'online': '#10b981',
-    'warning': '#f59e0b',
-    'alarm': '#ef4444',
-    'maintenance': '#f97316',
-    'offline': '#6b7280',
+    'online': '#10b981',       # зелёный — в работе
+    'warning': '#f59e0b',      # жёлтый — внимание
+    'alarm': '#ef4444',        # красный — авария
+    'maintenance': '#f97316',  # оранжевый — в ремонте
+    'offline': '#6b7280',      # серый — офлайн
 }
 
 ALERT_TYPE_COLORS = {
@@ -101,7 +101,7 @@ active_badge.short_description = "Статус"
 
 def health_badge(obj):
     """Цветной бейдж индекса здоровья."""
-    hi = obj.health_index
+    hi = int(obj.health_index)
     if hi >= 80:
         color = '#10b981'
     elif hi >= 50:
@@ -113,7 +113,7 @@ def health_badge(obj):
     return format_html(
         '<span style="color: {}; font-weight: 700; font-size: 14px;">'
         '{}%</span>',
-        color, int(hi)
+        color, hi
     )
 health_badge.short_description = "Health"
 
@@ -164,7 +164,7 @@ class TelemetryDataAdmin(admin.ModelAdmin):
                     'flow_rate_oil', 'water_cut', health_badge]
     list_filter = ['well', 'timestamp']
     search_fields = ['well__number']
-    list_per_page = 1000
+    list_per_page = 100  # ← было 1000, уменьшено чтобы не лагало
     date_hierarchy = 'timestamp'
     list_select_related = ['well']
     actions = [delete_all_telemetry, 'delete_selected']
