@@ -41,11 +41,11 @@ def reset_all_wells_to_online(modeladmin, request, queryset):
 # ==================== Хелперы для цветных бейджей ====================
 
 STATUS_COLORS = {
-    'online': '#10b981',       # зелёный — в работе
-    'warning': '#f59e0b',      # жёлтый — внимание
-    'alarm': '#ef4444',        # красный — авария
-    'maintenance': '#f97316',  # оранжевый — в ремонте
-    'offline': '#6b7280',      # серый — офлайн
+    'online': '#10b981',
+    'warning': '#f59e0b',
+    'alarm': '#ef4444',
+    'maintenance': '#f97316',
+    'offline': '#6b7280',
 }
 
 ALERT_TYPE_COLORS = {
@@ -112,8 +112,8 @@ def health_badge(obj):
         color = '#ef4444'
     return format_html(
         '<span style="color: {}; font-weight: 700; font-size: 14px;">'
-        '{:.0f}%</span>',
-        color, hi
+        '{}%</span>',
+        color, int(hi)
     )
 health_badge.short_description = "Health"
 
@@ -147,11 +147,12 @@ class WellAdmin(admin.ModelAdmin):
         """Последний Health Index скважины."""
         last = obj.latest_telemetry
         if last:
-            hi = int(last.health_index)  # приводим к int СРАЗУ
+            hi = int(last.health_index)
             color = '#10b981' if hi >= 80 else '#f59e0b' if hi >= 50 else '#ef4444'
             return format_html(
                 '<span style="color: {}; font-weight: 700; font-size: 14px;">'
                 '{}%</span>',
+                color, hi
             )
         return '—'
     latest_health.short_description = "Health"
@@ -163,7 +164,7 @@ class TelemetryDataAdmin(admin.ModelAdmin):
                     'flow_rate_oil', 'water_cut', health_badge]
     list_filter = ['well', 'timestamp']
     search_fields = ['well__number']
-    list_per_page = 1000  # увеличено с 50 до 1000
+    list_per_page = 1000
     date_hierarchy = 'timestamp'
     list_select_related = ['well']
     actions = [delete_all_telemetry, 'delete_selected']
