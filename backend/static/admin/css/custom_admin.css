@@ -1,5 +1,6 @@
 /* ============================================
-   Цифровое месторождение — Оптимизированная админка
+   Цифровое месторождение — Admin Dark Theme v2
+   Исправлены: поиск, кнопки действий, шрифт
    ============================================ */
 
 :root {
@@ -15,28 +16,18 @@
     --oil-danger: #ef4444;
 }
 
-/* === БАЗА === */
-html { font-size: 14px; }
+/* === БАЗА: шрифт 15px === */
+html { font-size: 15px !important; }
 body {
     background: var(--oil-bg) !important;
     color: var(--oil-text) !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-/* === Оптимизация таблиц === */
-#result_list {
-    font-size: 13px !important;
-}
-
-#result_list th, 
-#result_list td {
-    padding: 10px 12px !important;
-    white-space: nowrap;
-}
-
-#result_list tbody tr:hover {
-    background: var(--oil-card-hover) !important;
-}
+/* === Заголовки === */
+h1 { font-size: 22px !important; font-weight: 700 !important; }
+h2 { font-size: 18px !important; font-weight: 600 !important; }
+h3 { font-size: 16px !important; font-weight: 600 !important; }
 
 /* === Шапка === */
 #header {
@@ -57,45 +48,106 @@ body {
 }
 
 .nav-sidebar a {
-    padding: 8px 16px !important;
-    font-size: 13px !important;
+    padding: 10px 16px !important;
+    font-size: 14px !important;
 }
 
-/* === Формы === */
-input[type="text"],
-input[type="number"],
-input[type="password"],
-select,
-textarea {
+/* === Таблицы === */
+#result_list {
+    font-size: 14px !important;
+}
+
+#result_list th, 
+#result_list td {
+    padding: 12px 14px !important;
+    font-size: 14px !important;
+}
+
+#result_list tbody tr:hover {
+    background: var(--oil-card-hover) !important;
+}
+
+/* === Формы (НЕ трогаем поиск Unfold!) === */
+/* Применяем только к формам редактирования, не к changelist */
+.change-form input[type="text"],
+.change-form input[type="number"],
+.change-form input[type="password"],
+.change-form input[type="email"],
+.change-form input[type="url"],
+.change-form input[type="date"],
+.change-form textarea,
+.change-form select {
     background: var(--oil-card) !important;
     color: var(--oil-text) !important;
     border: 1px solid var(--oil-border) !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+}
+
+/* === Кнопки действий (НЕ ломаем Unfold) === */
+/* Только основные кнопки, не трогаем actions bar */
+.submit-row input,
+.object-tools a,
+.button.default,
+input[type="submit"].default {
+    background: var(--oil-accent) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 18px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+}
+
+.submit-row input:hover,
+.object-tools a:hover {
+    filter: brightness(1.1) !important;
+}
+
+/* === Actions bar (исправляем layout) === */
+#changelist .actions {
+    background: var(--oil-card) !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--oil-border) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+#changelist .actions select {
+    font-size: 14px !important;
     padding: 8px 12px !important;
+    background: var(--oil-card) !important;
+    color: var(--oil-text) !important;
+    border: 1px solid var(--oil-border) !important;
     border-radius: 6px !important;
 }
 
-/* === Кнопки === */
-.button, 
-input[type="submit"],
-input[type="button"],
-.object-tools a {
+/* Кнопка "Go" в actions bar */
+#changelist .actions button[type="submit"],
+#changelist .actions input[type="submit"] {
     background: var(--oil-accent) !important;
     color: white !important;
     border: none !important;
     padding: 8px 16px !important;
     border-radius: 6px !important;
-    font-weight: 500 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
 }
 
-.button:hover,
-input[type="submit"]:hover {
+#changelist .actions button[type="submit"]:hover {
     filter: brightness(1.1) !important;
 }
 
-/* === Табы дат === */
-.date-button {
-    padding: 6px 12px !important;
-    border-radius: 6px !important;
+/* === Чекбоксы === */
+input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    cursor: pointer !important;
+    accent-color: var(--oil-accent) !important;
 }
 
 /* === Пагинация === */
@@ -105,9 +157,23 @@ input[type="submit"]:hover {
 
 .paginator a, 
 .paginator span {
-    padding: 6px 12px !important;
+    padding: 8px 12px !important;
     border-radius: 6px !important;
     margin: 0 2px !important;
+    background: var(--oil-card) !important;
+    color: var(--oil-text) !important;
+    border: 1px solid var(--oil-border) !important;
+    font-size: 14px !important;
+}
+
+.paginator a:hover {
+    background: var(--oil-card-hover) !important;
+}
+
+.paginator .this-page {
+    background: var(--oil-accent) !important;
+    color: white !important;
+    border-color: var(--oil-accent) !important;
 }
 
 /* === Фильтры === */
@@ -115,13 +181,34 @@ input[type="submit"]:hover {
     background: var(--oil-card) !important;
     border: 1px solid var(--oil-border) !important;
     border-radius: 8px !important;
+    padding: 12px !important;
+}
+
+#changelist-filter h2 {
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: var(--oil-text-muted) !important;
+}
+
+#changelist-filter li a {
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    display: block !important;
+    font-size: 14px !important;
+}
+
+#changelist-filter li.selected a {
+    background: var(--oil-accent) !important;
+    color: white !important;
 }
 
 /* === Сообщения === */
 .messagelist li {
-    padding: 10px 16px !important;
-    border-radius: 6px !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
     margin-bottom: 8px !important;
+    font-size: 14px !important;
 }
 
 .messagelist .success { 
@@ -137,14 +224,6 @@ input[type="submit"]:hover {
     color: white !important;
 }
 
-/* === Actions bar === */
-#changelist .actions {
-    background: var(--oil-card) !important;
-    padding: 10px 16px !important;
-    border-radius: 8px !important;
-    border: 1px solid var(--oil-border) !important;
-}
-
 /* === Карточки === */
 .module, 
 .card,
@@ -153,6 +232,24 @@ fieldset {
     border: 1px solid var(--oil-border) !important;
     border-radius: 10px !important;
     padding: 16px !important;
+}
+
+fieldset h2, .module h2 {
+    color: var(--oil-text) !important;
+    font-size: 16px !important;
+    padding-bottom: 12px !important;
+    margin-bottom: 12px !important;
+    border-bottom: 1px solid var(--oil-border) !important;
+}
+
+/* === Ссылки === */
+a {
+    color: var(--oil-accent) !important;
+    text-decoration: none !important;
+}
+
+a:hover {
+    text-decoration: underline !important;
 }
 
 /* === Скроллбар === */
@@ -172,4 +269,11 @@ fieldset {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--oil-card-hover);
+}
+
+/* === Хелперы === */
+.help, .helptext {
+    font-size: 13px !important;
+    color: var(--oil-text-muted) !important;
+    margin-top: 6px !important;
 }
