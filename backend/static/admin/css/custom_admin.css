@@ -1,275 +1,164 @@
 /* ============================================
-   Цифровое месторождение — Admin Dark Theme
-   В стиле основного сайта (Vercel/Linear)
+   Цифровое месторождение — Оптимизированная админка
    ============================================ */
 
 :root {
-    --oil-bg: #09090b;
-    --oil-card: #18181b;
-    --oil-card-hover: #27272a;
-    --oil-border: #27272a;
-    --oil-text: #f4f4f5;
-    --oil-text-muted: #a1a1aa;
+    --oil-bg: #0a0a0f;
+    --oil-card: #121218;
+    --oil-card-hover: #1a1a23;
+    --oil-border: #252532;
+    --oil-text: #f0f0f5;
+    --oil-text-muted: #9090a0;
     --oil-accent: #3b82f6;
     --oil-success: #10b981;
     --oil-warning: #f59e0b;
     --oil-danger: #ef4444;
 }
 
-/* === БАЗА: крупный шрифт везде === */
-html { font-size: 15px !important; }
-body, td, th, input, select, textarea, button, label {
-    font-size: 14px !important;
+/* === БАЗА === */
+html { font-size: 14px; }
+body {
+    background: var(--oil-bg) !important;
+    color: var(--oil-text) !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-/* === Заголовки === */
-h1 { font-size: 24px !important; font-weight: 700 !important; letter-spacing: -0.02em; }
-h2 { font-size: 20px !important; font-weight: 600 !important; }
-h3 { font-size: 17px !important; font-weight: 600 !important; }
-
-/* === Сайдбар (слева) === */
-#nav-global,
-.sidebar-navigation,
-nav[role="navigation"] {
-    background: #0a0a0a !important;
-    border-right: 1px solid var(--oil-border) !important;
+/* === Оптимизация таблиц === */
+#result_list {
+    font-size: 13px !important;
 }
 
-.sidebar-navigation a,
-#nav-global a {
-    font-size: 14px !important;
-    padding: 11px 14px !important;
-    border-radius: 8px !important;
-    margin: 2px 8px !important;
-    transition: all 0.15s !important;
+#result_list th, 
+#result_list td {
+    padding: 10px 12px !important;
+    white-space: nowrap;
 }
 
-.sidebar-navigation a:hover,
-#nav-global a:hover {
+#result_list tbody tr:hover {
     background: var(--oil-card-hover) !important;
 }
 
 /* === Шапка === */
-#header, header {
-    background: var(--oil-bg) !important;
-    border-bottom: 1px solid var(--oil-border) !important;
-    padding: 14px 24px !important;
-}
-
-#site-name a {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: var(--oil-text) !important;
-    letter-spacing: -0.02em;
-}
-
-/* === Основной контент === */
-#content,
-#content-main,
-.dashboard .module,
-main {
-    background: var(--oil-bg) !important;
-    padding: 24px !important;
-}
-
-/* === Таблицы === */
-table {
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
-    width: 100% !important;
-}
-
-thead th {
+#header {
     background: var(--oil-card) !important;
-    color: var(--oil-text-muted) !important;
-    font-size: 12px !important;
+    border-bottom: 1px solid var(--oil-border) !important;
+    padding: 12px 24px !important;
+}
+
+#site-name {
+    font-size: 16px !important;
     font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    padding: 14px 16px !important;
-    border-bottom: 1px solid var(--oil-border) !important;
 }
 
-tbody tr {
+/* === Сайдбар === */
+#nav-sidebar {
     background: var(--oil-card) !important;
-    border-bottom: 1px solid var(--oil-border) !important;
-    transition: background 0.15s !important;
+    border-right: 1px solid var(--oil-border) !important;
 }
 
-tbody tr:hover {
-    background: var(--oil-card-hover) !important;
-}
-
-tbody td {
-    padding: 14px 16px !important;
-    font-size: 14px !important;
-    color: var(--oil-text) !important;
-    border-bottom: 1px solid var(--oil-border) !important;
+.nav-sidebar a {
+    padding: 8px 16px !important;
+    font-size: 13px !important;
 }
 
 /* === Формы === */
 input[type="text"],
 input[type="number"],
 input[type="password"],
-input[type="email"],
-input[type="url"],
-input[type="date"],
-input[type="search"],
-textarea,
-select {
+select,
+textarea {
     background: var(--oil-card) !important;
     color: var(--oil-text) !important;
     border: 1px solid var(--oil-border) !important;
-    font-size: 14px !important;
-    padding: 10px 12px !important;
-    border-radius: 8px !important;
-    min-height: 42px !important;
-    transition: border-color 0.15s !important;
-}
-
-input:focus, select:focus, textarea:focus {
-    border-color: var(--oil-accent) !important;
-    outline: none !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-}
-
-/* === Чекбоксы === */
-input[type="checkbox"] {
-    width: 18px !important;
-    height: 18px !important;
-    cursor: pointer !important;
-    accent-color: var(--oil-accent) !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
 }
 
 /* === Кнопки === */
-button,
-.button,
+.button, 
 input[type="submit"],
 input[type="button"],
-.submit-row input,
 .object-tools a {
     background: var(--oil-accent) !important;
     color: white !important;
     border: none !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    padding: 10px 18px !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-    transition: all 0.15s !important;
+    padding: 8px 16px !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
 }
 
-button:hover, .button:hover,
+.button:hover,
 input[type="submit"]:hover {
     filter: brightness(1.1) !important;
-    transform: translateY(-1px) !important;
 }
 
-/* === Сообщения === */
-.messagelist {
-    margin: 16px 0 !important;
-}
-
-.messagelist li {
-    font-size: 14px !important;
-    padding: 14px 20px !important;
-    border-radius: 10px !important;
-    margin-bottom: 10px !important;
-    border: none !important;
-    color: white !important;
-}
-
-.messagelist .success { background: var(--oil-success) !important; }
-.messagelist .warning { background: var(--oil-warning) !important; color: #1a1a1a !important; }
-.messagelist .error { background: var(--oil-danger) !important; }
-.messagelist .info { background: var(--oil-accent) !important; }
-
-/* === Actions бар === */
-#changelist .actions {
-    background: var(--oil-card) !important;
-    padding: 14px 18px !important;
-    border-radius: 10px !important;
-    border: 1px solid var(--oil-border) !important;
-    margin-bottom: 16px !important;
-}
-
-#changelist .actions select {
-    font-size: 14px !important;
-    padding: 8px 12px !important;
+/* === Табы дат === */
+.date-button {
+    padding: 6px 12px !important;
+    border-radius: 6px !important;
 }
 
 /* === Пагинация === */
 .paginator {
-    padding: 16px 0 !important;
+    padding: 12px 0 !important;
 }
 
-.paginator a, .paginator span {
-    font-size: 14px !important;
-    padding: 8px 14px !important;
+.paginator a, 
+.paginator span {
+    padding: 6px 12px !important;
     border-radius: 6px !important;
     margin: 0 2px !important;
+}
+
+/* === Фильтры === */
+#changelist-filter {
     background: var(--oil-card) !important;
-    color: var(--oil-text) !important;
+    border: 1px solid var(--oil-border) !important;
+    border-radius: 8px !important;
+}
+
+/* === Сообщения === */
+.messagelist li {
+    padding: 10px 16px !important;
+    border-radius: 6px !important;
+    margin-bottom: 8px !important;
+}
+
+.messagelist .success { 
+    background: var(--oil-success) !important; 
+    color: white !important;
+}
+.messagelist .warning { 
+    background: var(--oil-warning) !important; 
+    color: #1a1a1a !important;
+}
+.messagelist .error { 
+    background: var(--oil-danger) !important; 
+    color: white !important;
+}
+
+/* === Actions bar === */
+#changelist .actions {
+    background: var(--oil-card) !important;
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
     border: 1px solid var(--oil-border) !important;
 }
 
-.paginator a:hover {
-    background: var(--oil-card-hover) !important;
-}
-
-.paginator .this-page {
-    background: var(--oil-accent) !important;
-    color: white !important;
-    border-color: var(--oil-accent) !important;
-}
-
-/* === Карточки и модули === */
-.module,
+/* === Карточки === */
+.module, 
 .card,
 fieldset {
     background: var(--oil-card) !important;
     border: 1px solid var(--oil-border) !important;
-    border-radius: 12px !important;
-    padding: 20px !important;
-    margin-bottom: 16px !important;
+    border-radius: 10px !important;
+    padding: 16px !important;
 }
 
-fieldset h2, .module h2 {
-    color: var(--oil-text) !important;
-    font-size: 16px !important;
-    padding-bottom: 12px !important;
-    margin-bottom: 12px !important;
-    border-bottom: 1px solid var(--oil-border) !important;
-}
-
-/* === Хелперы и подсказки === */
-.help, .helptext {
-    font-size: 13px !important;
-    color: var(--oil-text-muted) !important;
-    margin-top: 6px !important;
-}
-
-/* === Ссылки === */
-a {
-    color: var(--oil-accent) !important;
-    text-decoration: none !important;
-}
-
-a:hover {
-    text-decoration: underline !important;
-}
-
-/* === Выделение текста === */
-::selection {
-    background: var(--oil-accent);
-    color: white;
-}
-
-/* === Скроллбар (Chrome/Safari/Edge) === */
+/* === Скроллбар === */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -278,72 +167,9 @@ a:hover {
 
 ::-webkit-scrollbar-thumb {
     background: var(--oil-border);
-    border-radius: 5px;
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--oil-card-hover);
-}
-
-/* === Логотип в шапке === */
-#branding h1, #site-name {
-    color: var(--oil-text) !important;
-}
-
-/* === Цветные бейджи в таблице — выравнивание === */
-td .field-status_badge span,
-td .field-alert_type_badge span,
-td .field-active_badge span,
-td .field-latest_health span {
-    display: inline-block !important;
-    min-width: 70px !important;
-    text-align: center !important;
-}
-
-/* === Фильтры === */
-#changelist-filter {
-    background: var(--oil-card) !important;
-    border: 1px solid var(--oil-border) !important;
-    border-radius: 10px !important;
-    padding: 12px !important;
-}
-
-#changelist-filter h2 {
-    font-size: 13px !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    color: var(--oil-text-muted) !important;
-}
-
-#changelist-filter li a {
-    padding: 6px 10px !important;
-    border-radius: 6px !important;
-    display: block !important;
-}
-
-#changelist-filter li.selected a {
-    background: var(--oil-accent) !important;
-    color: white !important;
-}
-
-/* === Форма входа === */
-.login #container {
-    background: var(--oil-card) !important;
-    border: 1px solid var(--oil-border) !important;
-    border-radius: 16px !important;
-    padding: 40px !important;
-}
-
-/* === Delete confirmation === */
-.delete-confirmation {
-    background: var(--oil-card) !important;
-    border: 1px solid var(--oil-danger) !important;
-    border-radius: 12px !important;
-    padding: 24px !important;
-}
-
-/* === Адаптив === */
-@media (max-width: 768px) {
-    body, td, th { font-size: 15px !important; }
-    thead th, tbody td { padding: 10px 12px !important; }
 }
