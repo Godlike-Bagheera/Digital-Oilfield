@@ -11,9 +11,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'unfold',
-    'unfold.contrib.filters',  # Красивые фильтры (даты, выпадающие списки)
-    'unfold.contrib.forms',    # Красивые формы
+    'unfold',                  # ОБЯЗАТЕЛЬНО ПЕРЕД admin
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -79,10 +79,21 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# ВАЖНО: указываем папку со статикой проекта, чтобы Django нашел наш CSS
+STATICFILES_DIRS = [
+    BASE_DIR / 'wells' / 'static',
+]
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173']
 CORS_ALLOW_ALL_ORIGINS = True
+
+# ВАЖНО: фикс 403 (CSRF). Разрешаем запросы с фронтенда (Vite)
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -101,6 +112,10 @@ UNFOLD = {
     "SHOW_VIEW_ON_SITE": False,
     "DARK_MODE": True,
     "BORDER_RADIUS": "10px",
+    "STYLES": [
+        # Подключаем наш кастомный CSS
+        lambda request: static("admin/css/custom_admin.css"),
+    ],
     "COLORS": {
         "base": {
             "50": "244 244 245", "100": "228 228 231", "200": "212 212 216",
