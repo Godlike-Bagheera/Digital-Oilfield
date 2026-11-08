@@ -125,28 +125,28 @@ REST_FRAMEWORK = {
 UNFOLD = {
     "SITE_TITLE": "Цифровое месторождение",
     "SITE_HEADER": "Цифровое месторождение",
-    "SITE_SYMBOL": "local_gas_station",  # иконка Material Icons для Django Unfold
-    "SHOW_HISTORY": True,
-    "SHOW_VIEW_ON_SITE": False,
-    "BORDER_RADIUS": "8px",
-    "STYLES": [
-        # Кастомный CSS админки (шрифт, таблицы, кнопки, тёмная тема)
-        lambda request: static("admin/css/custom_admin.css"),
-    ],
+    "SITE_URL": "/",
+    
+    # ТЁМНАЯ ТЕМА — всегда, без переключателя
+    "THEME": "force_dark",
+    
+    # Цветовая схема: тёмно-серая вместо синей
     "COLORS": {
-        "base": {
-            "50": "244 244 245", "100": "228 228 231", "200": "212 212 216",
-            "300": "161 161 170", "400": "113 113 122", "500": "82 82 91",
-            "600": "63 63 70", "700": "39 39 42", "800": "24 24 27",
-            "900": "18 18 21", "950": "9 9 11",
-        },
         "primary": {
-            "50": "239 246 255", "100": "219 234 254", "200": "191 219 254",
-            "300": "147 197 253", "400": "96 165 250", "500": "59 130 246",
-            "600": "37 99 235", "700": "29 78 216", "800": "30 64 175",
-            "900": "30 58 138", "950": "23 37 84",
+            "50": "250 250 250",
+            "100": "244 244 245",
+            "200": "228 228 231",
+            "300": "212 212 216",
+            "400": "161 161 170",
+            "500": "113 113 122",
+            "600": "82 82 91",
+            "700": "63 63 70",
+            "800": "39 39 42",
+            "900": "24 24 27",
+            "950": "9 9 11",
         },
     },
+    
     "SIDEBAR": {
         "show_search": True,
         "show_all_applications": False,
@@ -155,20 +155,19 @@ UNFOLD = {
                 "title": "Мониторинг",
                 "separator": True,
                 "items": [
-                    {"title": "Скважины", "icon": "factory", "link": "/admin/wells/well/"},
+                    {"title": "Скважины", "icon": "oil_barrel", "link": "/admin/wells/well/"},
                     {"title": "Телеметрия", "icon": "monitoring", "link": "/admin/wells/telemetrydata/"},
                     {"title": "Алерты", "icon": "warning", "link": "/admin/wells/alert/"},
-                ],
-            },
-            {
-                "title": "Обучение",
-                "separator": True,
-                "items": [
                     {"title": "Подсказки", "icon": "school", "link": "/admin/wells/trainingtip/"},
                 ],
             },
         ],
     },
+    
+    # Кастомный CSS для размера шрифта
+    "STYLES": [
+        lambda request: "/static/admin/css/custom_admin.css",
+    ],
 }
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
