@@ -147,11 +147,11 @@ class WellAdmin(admin.ModelAdmin):
         """Последний Health Index скважины."""
         last = obj.latest_telemetry
         if last:
-            hi = last.health_index
+            hi = int(last.health_index)  # приводим к int СРАЗУ
             color = '#10b981' if hi >= 80 else '#f59e0b' if hi >= 50 else '#ef4444'
             return format_html(
-                '<span style="color: {}; font-weight: 700;">{:.0f}%</span>',
-                color, hi
+                '<span style="color: {}; font-weight: 700; font-size: 14px;">'
+                '{}%</span>',
             )
         return '—'
     latest_health.short_description = "Health"
