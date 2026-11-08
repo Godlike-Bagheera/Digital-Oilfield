@@ -1,35 +1,34 @@
-/* Кастомные правки для Unfold (без !important, чтобы не ломать тему) */
+/* ============================================
+   Кастомные правки для Unfold
+   ============================================ */
 
-/* Увеличиваем базовый шрифт для комфортного чтения */
+/* Увеличиваем базовый шрифт (по умолчанию Unfold делает 14px) */
 html {
-    font-size: 15px;
+    font-size: 16px !important;
 }
 
-/* Делаем фон полностью черным (в стиле основного сайта) */
-body {
-    background-color: #09090b !important;
+/* Основной текст и поля */
+body, .form-row input, .form-row select, .form-row textarea {
+    font-size: 15px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-/* Делаем текст в таблицах чуть крупнее */
-#result_list th,
+/* Таблицы: просторнее и крупнее */
+#result_list th, 
 #result_list td {
-    font-size: 14px;
-    padding: 12px 14px;
+    font-size: 15px !important;
+    padding: 14px 16px !important;
 }
 
-/* Стилизуем строку поиска, чтобы она не сливалась с фоном */
-#searchbar {
-    background-color: #121215 !important;
-    color: #f4f4f5 !important;
-    border: 1px solid #27272a !important;
+/* Заголовки страниц */
+h1, .page-title {
+    font-size: 24px !important;
+    font-weight: 700 !important;
 }
 
-/* Поля ввода в формах редактирования */
-.form-row input[type="text"],
-.form-row input[type="number"],
-.form-row select,
-.form-row textarea {
-    background-color: #121215 !important;
-    color: #f4f4f5 !important;
-    border-color: #27272a !important;
+/* Кнопки */
+.button, input[type=submit], button[type=submit] {
+    font-size: 15px !important;
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
 }
