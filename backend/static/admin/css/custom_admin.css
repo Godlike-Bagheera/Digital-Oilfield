@@ -1,31 +1,196 @@
-/* Увеличение базового размера текста во всей админке */
-body {
-    font-size: 15px !important;
+/* ============================================
+   Кастомная стилизация админки Unfold
+   В стиле основного сайта (Vercel/Linear dark theme)
+   ============================================ */
+
+/* Базовые переменные цветов сайта */
+:root {
+    --oil-bg: #09090b;
+    --oil-card: #18181b;
+    --oil-card-hover: #27272a;
+    --oil-border: #27272a;
+    --oil-text: #f4f4f5;
+    --oil-text-muted: #a1a1aa;
+    --oil-accent: #3b82f6;
+    --oil-success: #10b981;
+    --oil-warning: #f59e0b;
+    --oil-danger: #ef4444;
 }
 
-/* Таблицы */
-td, th {
+/* ======= Базовый размер текста — КРУПНЕЕ ======= */
+body, td, th, input, select, textarea, button, label {
     font-size: 14px !important;
-    padding: 10px 12px !important;
 }
 
 /* Заголовки страниц */
-h1, h2 {
-    font-size: 22px !important;
+h1 { font-size: 24px !important; font-weight: 700 !important; }
+h2 { font-size: 20px !important; font-weight: 600 !important; }
+h3 { font-size: 17px !important; font-weight: 600 !important; }
+
+/* ======= Таблицы ======= */
+table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
 }
 
-/* Кнопки и формы */
-button, input, select, textarea {
+thead th {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 16px !important;
+}
+
+tbody td {
+    padding: 14px 16px !important;
     font-size: 14px !important;
 }
 
-/* Боковое меню */
-.sidebar-link {
-    font-size: 14px !important;
+tbody tr:hover {
+    background-color: var(--oil-card-hover) !important;
 }
 
-/* Чекбоксы "выбрать все" — крупнее */
-.action-checkbox {
-    width: 20px !important;
-    height: 20px !important;
+/* ======= Формы ======= */
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="date"],
+textarea,
+select {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    min-height: 42px !important;
+}
+
+/* ======= Кнопки ======= */
+button, .button, input[type="submit"], input[type="button"] {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    padding: 10px 18px !important;
+    border-radius: 10px !important;
+    transition: all 0.2s ease !important;
+}
+
+/* ======= Чекбоксы — крупнее ======= */
+input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer !important;
+}
+
+/* ======= Сайдбар ======= */
+.sidebar-navigation a,
+.sidebar-navigation .nav-link {
+    font-size: 14px !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+}
+
+/* ======= Карточки и панели ======= */
+.card, .module, fieldset {
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+
+/* ======= Сообщения (toast) ======= */
+.messagelist li {
+    font-size: 14px !important;
+    padding: 14px 20px !important;
+    border-radius: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+.messagelist .success { background-color: var(--oil-success) !important; }
+.messagelist .warning { background-color: var(--oil-warning) !important; }
+.messagelist .error { background-color: var(--oil-danger) !important; }
+
+/* ======= Действия (actions) в changelist ======= */
+#changelist .actions {
+    padding: 12px !important;
+    border-radius: 10px !important;
+}
+
+#changelist .actions select {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+}
+
+/* ======= Пагинация ======= */
+.paginator a, .paginator span {
+    font-size: 14px !important;
+    padding: 8px 14px !important;
+    border-radius: 6px !important;
+}
+
+/* ======= Метки и подсказки ======= */
+.help, .helptext {
+    font-size: 13px !important;
+    color: var(--oil-text-muted) !important;
+    margin-top: 6px !important;
+}
+
+/* ======= Бейджи статусов — выравнивание ======= */
+td .field-status_badge span,
+td .field-alert_type_badge span,
+td .field-active_badge span {
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* ======= Логотип/шапка ======= */
+#header, header {
+    font-size: 16px !important;
+}
+
+#site-name a {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+}
+
+/* ======= Адаптив для мобильных ======= */
+@media (max-width: 768px) {
+    body, td, th, input, select, textarea, button {
+        font-size: 15px !important;
+    }
+    thead th, tbody td {
+        padding: 10px 12px !important;
+    }
+}
+
+/* ======= Плавная анимация ======= */
+a, button, .button {
+    transition: all 0.15s ease !important;
+}
+
+a:hover {
+    opacity: 0.85;
+}
+
+/* ======= Цветные акценты для важных элементов ======= */
+.object-tools a,
+.submit-row input {
+    background-color: var(--oil-accent) !important;
+    color: white !important;
+}
+
+.submit-row input:hover {
+    filter: brightness(1.1);
+}
+
+/* ======= Убираем синие стандартные акценты ======= */
+::selection {
+    background-color: var(--oil-accent);
+    color: white;
+}
+
+/* ======= Скругление углов для всех контейнеров ======= */
+#content,
+#content-main,
+.dashboard .module,
+form {
+    border-radius: 12px !important;
 }
