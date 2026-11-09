@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { X } from 'lucide-react';
 import { humanizeMessage } from '../utils/parameters';
 
 const MAX_VISIBLE_TOASTS = 3;
@@ -11,20 +12,40 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+function CloseButton({ toastId }) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        toast.dismiss(toastId);
+      }}
+      className="ml-2 shrink-0 rounded-full p-1 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-zinc-100 active:scale-95"
+      aria-label="Закрыть"
+    >
+      <X size={16} />
+    </button>
+  );
+}
+
 function showSingleToast(alert) {
   const isCritical = alert.alert_type === 'critical';
   const toastFn = isCritical ? toast.error : toast;
   const toastId = `alert-${alert.id}`;
 
   toastFn(
-    <div>
-      <div className="mb-1 font-semibold">
-        {isCritical ? 'Критическая авария' : 'Предупреждение'} · Скважина №{wellNumberOf(alert)}
+    (t) => (
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="mb-1 font-semibold text-sm">
+            {isCritical ? '🚨 Критическая авария' : '⚠️ Предупреждение'} · №{wellNumberOf(alert)}
+          </div>
+          <div className="text-sm opacity-90 break-words">{humanizeMessage(alert.message)}</div>
+          <div className="mt-1 text-xs opacity-60">{formatTime(alert.created_at)}</div>
+        </div>
+        <CloseButton toastId={t.id} />
       </div>
-      <div className="text-sm opacity-90">{humanizeMessage(alert.message)}</div>
-      <div className="mt-1 text-xs opacity-60">{formatTime(alert.created_at)}</div>
-    </div>,
-    { id: toastId, duration: isCritical ? 8000 : 5000 }
+    ),
+    { id: toastId, duration: isCritical ? 10000 : 7000 }
   );
 }
 
@@ -34,25 +55,38 @@ function showWellGroupToast(wellNum, alerts) {
   const toastId = `well-${wellNum}`;
 
   toastFn(
-    <div>
-      <div className="mb-1 font-semibold">Скважина №{wellNum}: {alerts.length} проблемы</div>
-      <ul className="list-disc space-y-0.5 pl-4 text-sm opacity-90">
-        {alerts.map((a) => <li key={a.id}>{humanizeMessage(a.message)}</li>)}
-      </ul>
-    </div>,
-    { id: toastId, duration: 8000 }
+    (t) => (
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="mb-1 font-semibold text-sm">
+            Скважина №{wellNum}: {alerts.length} {alerts.length === 1 ? 'проблема' : 'проблемы'}
+          </div>
+          <ul className="list-disc space-y-0.5 pl-4 text-sm opacity-90 break-words">
+            {alerts.slice(0, 3).map((a) => <li key={a.id}>{humanizeMessage(a.message)}</li>)}
+            {alerts.length > 3 && <li className="opacity-70">...и ещё {alerts.length - 3}</li>}
+          </ul>
+        </div>
+        <CloseButton toastId={t.id} />
+      </div>
+    ),
+    { id: toastId, duration: 10000 }
   );
 }
 
 function showSummaryToast(count) {
   toast.error(
-    <div>
-      <div className="mb-1 font-semibold">Массовая авария</div>
-      <div className="text-sm opacity-90">
-        Зафиксировано {count} новых алертов. Подробности на странице «Алерты».
+    (t) => (
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="mb-1 font-semibold text-sm">🚨 Массовая авария</div>
+          <div className="text-sm opacity-90 break-words">
+            Зафиксировано {count} новых алертов. Подробности в разделе «Алерты».
+          </div>
+        </div>
+        <CloseButton toastId={t.id} />
       </div>
-    </div>,
-    { id: SUMMARY_TOAST_ID, duration: 8000 }
+    ),
+    { id: SUMMARY_TOAST_ID, duration: 10000 }
   );
 }
 
