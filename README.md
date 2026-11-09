@@ -1,3 +1,8 @@
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Django](https://img.shields.io/badge/Django-5.0-green)
+![React](https://img.shields.io/badge/React-18.2-61dafb)
+![Vite](https://img.shields.io/badge/Vite-5.0-purple)
+
 # Цифровое месторождение (Digital Oilfield)
 
 Веб-дашборд для мониторинга нефтепромыслового оборудования в режиме реального времени с бизнес-логикой ручного ремонта скважин (SCADA-подход) и адаптивным интерфейсом для мобильных устройств.
