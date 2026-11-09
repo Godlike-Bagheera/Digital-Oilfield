@@ -42,15 +42,18 @@ export default function App() {
       </Layout>
       <Toaster
         position="top-right"
-        containerStyle={{ zIndex: 9999 }}  /* ВАЖНО: тосты поверх всего */
+        containerStyle={{ zIndex: 9999 }}
         toastOptions={{
           duration: 5000,
+          // ВКЛЮЧАЕМ ВСТРОЕННЫЙ КРЕСТИК
+          closeButton: true,
           style: {
             background: '#18181b',
             color: '#f4f4f5',
             border: '1px solid #27272a',
             borderRadius: '12px',
-            padding: '14px 18px',
+            // Отступ справа, чтобы текст не залезал под крестик
+            padding: '14px 36px 14px 18px',
             fontSize: '14px',
             boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
             maxWidth: '400px',
@@ -63,6 +66,7 @@ export default function App() {
             style: {
               background: '#7f1d1d',
               border: '1px solid #dc2626',
+              padding: '14px 36px 14px 18px',
             },
             duration: 8000,
           },
