@@ -5,7 +5,6 @@
 from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.utils import timezone
-from django.db.models import OuterRef, Subquery
 
 # Импорты Unfold
 from unfold.admin import ModelAdmin
@@ -15,6 +14,8 @@ from unfold.contrib.filters.admin import (
 )
 
 from .models import Well, TelemetryData, Alert, TrainingTip
+# Импортируем словарь для перевода ключей в русские названия
+from wells.constants import get_parameter_label
 
 # ==================== Действия массовых операций ====================
 
@@ -69,27 +70,22 @@ def health_badge(obj):
     """Цветной бейдж индекса здоровья."""
     if not hasattr(obj, 'health_index'): return '—'
     hi = int(obj.health_index)
-    if hi >= 80:
-        color = '#10b981'
-    elif hi >= 50:
-        color = '#f59e0b'
-    elif hi >= 20:
-        color = '#f97316'
-    else:
-        color = '#ef4444'
+    if hi >= 80: color = '#10b981'
+    elif hi >= 50: color = '#f59e0b'
+    elif hi >= 20: color = '#f97316'
+    else: color = '#ef4444'
     return format_html(
         '<span style="color: {}; font-weight: 700; font-size: 15px;">{}%</span>',
         color, hi
     )
 health_badge.short_description = "Health"
 
+
 # ==================== Админ-классы ====================
 
 @admin.register(Well)
 class WellAdmin(ModelAdmin):
     list_display = ['number', 'cdng', 'well_type', 'pump_type', 'status_badge', 'latest_health', 'is_active']
-    
-    # Unfold фильтры (красивые выпадающие списки и календарь)
     list_filter = [
         'status', 'cdng', 'well_type', 'pump_type', 'is_active',
         ('commission_date', RangeDateFilter),
@@ -118,19 +114,14 @@ class WellAdmin(ModelAdmin):
     
     @display(description="Статус", label=True)
     def status_badge(self, obj):
-        """Возвращает кортеж (текст, цвет) для встроенных бейджей Unfold."""
         colors = {
-            'online': 'green',
-            'warning': 'yellow',
-            'alarm': 'red',
-            'maintenance': 'orange',
-            'offline': 'gray',
+            'online': 'green', 'warning': 'yellow', 'alarm': 'red',
+            'maintenance': 'orange', 'offline': 'gray',
         }
         return (obj.get_status_display(), colors.get(obj.status, 'gray'))
     
     @display(description="Health")
     def latest_health(self, obj):
-        """Последний Health Index скважины."""
         last = obj.latest_telemetry
         if last:
             hi = int(last.health_index)
@@ -168,32 +159,49 @@ class TelemetryDataAdmin(ModelAdmin):
 
 @admin.register(Alert)
 class AlertAdmin(ModelAdmin):
-    list_display = ['well', 'alert_type_badge', 'parameter', 'short_message', 'active_badge', 'created_at']
+    # Выстраиваем колонки в логичном порядке
+    list_display = ['well_display', 'alert_type_badge', 'parameter_display', 'message_display', 'active_badge', 'created_at']
+    
     list_filter = [
-        'alert_type', 'is_active', 'parameter',
+        'alert_type', 'is_active', 
         ('well', RelatedDropdownFilter),
         ('created_at', RangeDateFilter),
     ]
     search_fields = ['well__number', 'message', 'parameter']
-    list_per_page = 30
+    list_per_page = 40
     list_select_related = ['well']
     date_hierarchy = 'created_at'
     ordering = ['-created_at']
     actions = [close_all_alerts, 'delete_selected']
     
+    # Форматируем колонки
+    
+    @display(description="Скважина")
+    def well_display(self, obj):
+        """Красивое отображение скважины: №101 (ЦДНГ-1)"""
+        return f"№{obj.well.number} ({obj.well.cdng})"
+    
     @display(description="Тип", label=True)
     def alert_type_badge(self, obj):
+        """Цветной бейдж типа (Критический, Внимание и т.д.)"""
         colors = {'critical': 'red', 'warning': 'yellow', 'predictive': 'blue'}
         return (obj.get_alert_type_display(), colors.get(obj.alert_type, 'gray'))
     
-    @display(description="Активен?", label=True)
-    def active_badge(self, obj):
-        return ("Активен", "red") if obj.is_active else ("Закрыт", "gray")
+    @display(description="Параметр")
+    def parameter_display(self, obj):
+        """Переводит 'water_cut' в 'Обводнённость'"""
+        return get_parameter_label(obj.parameter)
     
     @display(description="Сообщение")
-    def short_message(self, obj):
+    def message_display(self, obj):
+        """Укорачивает длинный текст, чтобы таблица не расползалась"""
         msg = obj.message or ''
-        return msg[:80] + '...' if len(msg) > 80 else msg
+        return msg[:60] + '...' if len(msg) > 60 else msg
+    
+    @display(description="Статус", label=True)
+    def active_badge(self, obj):
+        """Красный бейдж 'Активен' или серый 'Закрыт'"""
+        return ("Активен", "red") if obj.is_active else ("Закрыт", "gray")
 
 
 @admin.register(TrainingTip)
