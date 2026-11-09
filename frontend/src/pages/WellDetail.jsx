@@ -221,7 +221,6 @@ export default function WellDetail() {
           </div>
 
           {/* Правая часть: Кольцо и Тумблер */}
-          {/* На мобилке делаем красивую панель с рамкой, на ПК убираем рамку */}
           <div className="flex items-center justify-between gap-6 rounded-xl border border-zinc-800/80 bg-[#09090b]/50 p-4 sm:justify-start sm:border-0 sm:bg-transparent sm:p-0">
             
             {/* Кольцо */}
@@ -241,19 +240,20 @@ export default function WellDetail() {
 
             {/* Тумблер обучения */}
             <div className="flex flex-col items-center gap-2">
-              <label className="flex cursor-pointer select-none flex-col items-center gap-2">
-                <button
-                  type="button"
-                  role="switch"
-                  onClick={() => setTrainingMode((v) => !v)}
-                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
-                >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-                <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">
-                  {trainingMode ? 'Вкл' : 'Выкл'}
-                </span>
-              </label>
+              <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">Обучение</span>
+              
+              <button
+                type="button"
+                role="switch"
+                onClick={() => setTrainingMode((v) => !v)}
+                className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+              
+              <span className={`text-[11px] uppercase tracking-wider font-medium ${trainingMode ? 'text-blue-400' : 'text-zinc-500'}`}>
+                {trainingMode ? 'Вкл' : 'Выкл'}
+              </span>
             </div>
 
           </div>
