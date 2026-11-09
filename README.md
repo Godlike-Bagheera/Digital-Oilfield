@@ -280,7 +280,6 @@ Digital-Oilfield/
 │   ├── nginx.conf
 │   ├── vite.config.js
 │   └── package.json
-├── screenshots/                 # Скриншоты интерфейса
 ├── docker-compose.yml
 ├── test_all.py
 └── README.md
