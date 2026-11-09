@@ -11,7 +11,6 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ cdng: 'all', status: 'all' });
   const [searchQuery, setSearchQuery] = useState('');
-  // Живое время последнего обновления (доказательство автообновления каждые 3 сек)
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchWells = useCallback(async () => {
@@ -37,11 +36,9 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Первоначальная загрузка + автообновление каждые 3 секунды
   useEffect(() => {
     fetchWells();
     fetchAlerts();
-    // Автообновление каждые 3 секунды
     const interval = setInterval(() => {
       fetchWells();
       fetchAlerts();
@@ -49,19 +46,12 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchWells, fetchAlerts]);
 
-  // Мгновенное обновление дашборда, когда скважину починили на другой странице.
-  // WellDetail кидает событие 'well-updated' после успешного ремонта —
-  // Dashboard ловит его и сразу делает refetch, чтобы статус и health_index
-  // сменились одновременно (без окна "Авария + 90%").
   useEffect(() => {
     const onWellUpdated = () => {
       fetchWells();
       fetchAlerts();
     };
     window.addEventListener('well-updated', onWellUpdated);
-
-    // Дополнительно: обновляем при возврате фокуса на вкладку,
-    // чтобы защититься от рассинхрона после переключения вкладок браузера.
     const onVisibility = () => {
       if (!document.hidden) {
         fetchWells();
@@ -76,10 +66,8 @@ export default function Dashboard() {
     };
   }, [fetchWells, fetchAlerts]);
 
-  // Уникальные ЦДНГ из данных (Set гарантирует отсутствие дубликатов)
   const uniqueCdngs = [...new Set(wells.map((w) => w.cdng))].sort();
 
-  // Фильтрация
   const filteredWells = wells.filter((well) => {
     if (filters.cdng !== 'all' && well.cdng !== filters.cdng) return false;
     if (filters.status !== 'all' && well.status !== filters.status) return false;
@@ -87,7 +75,6 @@ export default function Dashboard() {
     return true;
   });
 
-  // Статистика по статусу скважин (совпадает с бейджами на карточках)
   const normalCount = wells.filter((w) => w.status === 'online').length;
   const warningCount = wells.filter((w) => w.status === 'warning').length;
   const alarmCount = wells.filter((w) => w.status === 'alarm' || w.status === 'maintenance').length;
@@ -97,19 +84,13 @@ export default function Dashboard() {
     setSearchQuery('');
   };
 
-  // Скелетоны загрузки — убирают layout shift (дергание)
   if (loading) {
     return (
-      <div className="space-y-8">
-        <div className="h-8 w-1/3 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="space-y-8 animate-pulse">
+        <div className="h-8 w-1/3 rounded-xl border border-zinc-800/80 bg-[#121215]" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-64 animate-pulse rounded-xl border border-zinc-800/80 bg-[#121215]" />
+            <div key={i} className="h-28 rounded-xl border border-zinc-800/80 bg-[#121215]" />
           ))}
         </div>
       </div>
@@ -117,35 +98,32 @@ export default function Dashboard() {
   }
 
   const kpiCards = [
-    { label: 'Всего скважин', value: wells.length, accent: 'text-zinc-50', dot: 'bg-blue-400', ring: 'ring-blue-500/20', text: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { label: 'В норме', value: normalCount, accent: 'text-emerald-400', dot: 'bg-emerald-500', ring: 'ring-emerald-500/20', text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { label: 'Внимание', value: warningCount, accent: 'text-amber-400', dot: 'bg-amber-500', ring: 'ring-amber-500/20', text: 'text-amber-400', bg: 'bg-amber-500/10' },
-    { label: 'Аварии', value: alarmCount, accent: 'text-rose-400', dot: 'bg-rose-500', ring: 'ring-rose-500/20', text: 'text-rose-400', bg: 'bg-rose-500/10' },
+    { label: 'Всего скважин', value: wells.length, accent: 'text-zinc-50', dot: 'bg-blue-400', ring: 'ring-blue-500/20' },
+    { label: 'В норме', value: normalCount, accent: 'text-emerald-400', dot: 'bg-emerald-500', ring: 'ring-emerald-500/20' },
+    { label: 'Внимание', value: warningCount, accent: 'text-amber-400', dot: 'bg-amber-500', ring: 'ring-amber-500/20' },
+    { label: 'Аварии', value: alarmCount, accent: 'text-rose-400', dot: 'bg-rose-500', ring: 'ring-rose-500/20' },
   ];
 
   return (
     <div className="animate-fade-in mx-auto max-w-7xl">
-      {/* Заголовок страницы + LIVE-индикатор */}
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-50 tracking-tight">Панель мониторинга</h1>
           <p className="text-sm text-zinc-400 mt-1">
             Контроль нефтепромыслового оборудования в режиме реального времени
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-zinc-800/80 bg-[#09090b]/50 px-3 py-1.5 backdrop-blur-md">
+        <div className="flex items-center gap-2 self-start rounded-full border border-zinc-800/80 bg-[#09090b]/50 px-3 py-1.5 backdrop-blur-md sm:self-auto">
           <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
           <span className="text-xs font-medium text-zinc-400">
-            LIVE{lastUpdated ? ` • Обновлено в ${lastUpdated}` : ''}
+            LIVE{lastUpdated ? ` • ${lastUpdated}` : ''}
           </span>
         </div>
       </div>
 
-      {/* Баннер активных алертов */}
       <AlertBanner alerts={alerts} />
 
-      {/* KPI-карточки с градиентной обводкой */}
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpiCards.map((stat, idx) => (
           <div
             key={stat.label}
@@ -154,21 +132,16 @@ export default function Dashboard() {
           >
             <div className="flex items-center gap-2">
               <span className={`h-1.5 w-1.5 rounded-full ${stat.dot}`} />
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">
-                {stat.label}
-              </p>
+              <p className="text-xs font-medium uppercase tracking-wide text-zinc-400">{stat.label}</p>
             </div>
-            <p className={`mt-3 text-3xl font-semibold tracking-tight ${stat.accent}`}>
-              {stat.value}
-            </p>
+            <p className={`mt-3 text-3xl font-semibold tracking-tight ${stat.accent}`}>{stat.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Панель фильтров */}
-      <div className="mb-8 rounded-2xl border border-zinc-800/80 bg-[#121215]/80 p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md">
-        <div className="flex flex-wrap gap-4">
-          <div className="min-w-[200px] flex-1">
+      <div className="mb-8 rounded-2xl border border-zinc-800/80 bg-[#121215]/80 p-4 md:p-6 shadow-2xl ring-1 ring-white/5 backdrop-blur-md">
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div className="flex-1">
             <label className="mb-2 block text-sm font-medium text-zinc-400">Поиск</label>
             <input
               type="text"
@@ -179,7 +152,7 @@ export default function Dashboard() {
             />
           </div>
 
-          <div className="min-w-[150px] flex-1">
+          <div className="flex-1">
             <label className="mb-2 block text-sm font-medium text-zinc-400">ЦДНГ</label>
             <select
               value={filters.cdng}
@@ -193,7 +166,7 @@ export default function Dashboard() {
             </select>
           </div>
 
-          <div className="min-w-[150px] flex-1">
+          <div className="flex-1">
             <label className="mb-2 block text-sm font-medium text-zinc-400">Статус</label>
             <select
               value={filters.status}
@@ -211,7 +184,7 @@ export default function Dashboard() {
           <div className="flex items-end">
             <button
               onClick={resetFilters}
-              className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full md:w-auto rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             >
               Сбросить
             </button>
@@ -219,31 +192,24 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Ошибки */}
       {error && (
-        <div className="mb-6 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-400">
-          {error}
-        </div>
+        <div className="mb-6 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-400">{error}</div>
       )}
 
-      {/* Список скважин */}
       {filteredWells.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-zinc-800 py-16 text-center text-zinc-500">
           <SearchX size={36} className="mx-auto mb-3 text-zinc-600" />
           <p className="text-sm text-zinc-300">Скважины не найдены</p>
-          <p className="mt-1 text-xs text-zinc-600">Измените параметры поиска или сбросьте фильтры</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6">
           {filteredWells.map((well) => (
             <WellCard key={well.id} well={well} />
           ))}
         </div>
       )}
 
-      <p className="mt-8 text-center text-xs text-zinc-600">
-        Данные обновляются автоматически каждые 3 секунды
-      </p>
+      <p className="mt-8 text-center text-xs text-zinc-600">Данные обновляются автоматически</p>
     </div>
   );
 }
