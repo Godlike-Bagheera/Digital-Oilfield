@@ -2,8 +2,8 @@ import React, { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout.jsx';
+import useAlertNotifications from './hooks/useAlertNotifications';
 
-// Code splitting: каждая страница — отдельный чанк, загружается при первом переходе
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
 const WellDetail = lazy(() => import('./pages/WellDetail.jsx'));
 const WellsPage = lazy(() => import('./pages/WellsPage.jsx'));
@@ -18,12 +18,8 @@ function LoadingFallback() {
     </div>
   );
 }
-import useAlertNotifications from './hooks/useAlertNotifications';
 
-// Внутренний компонент: здесь доступны хуки роутера и глобальные уведомления.
-// Хук подключён именно в App (а не в Dashboard) — тосты работают на ВСЕХ страницах.
 export default function App() {
-  // Активируем глобальные уведомления (работают на ВСЕХ страницах)
   useAlertNotifications(10000);
 
   return (
@@ -42,21 +38,27 @@ export default function App() {
       </Layout>
       <Toaster
         position="top-right"
-        containerStyle={{ zIndex: 9999 }}
+        reverseOrder={false}
+        gutter={12}
+        containerStyle={{ 
+          zIndex: 9999,
+          top: 80,
+          right: 12,
+          left: 12,
+        }}
         toastOptions={{
-          duration: 5000,
-          // ВКЛЮЧАЕМ ВСТРОЕННЫЙ КРЕСТИК
-          closeButton: true,
+          duration: 7000,
+          dismissible: true,
           style: {
             background: '#18181b',
             color: '#f4f4f5',
             border: '1px solid #27272a',
             borderRadius: '12px',
-            // Отступ справа, чтобы текст не залезал под крестик
-            padding: '14px 36px 14px 18px',
+            padding: '14px 18px',
             fontSize: '14px',
             boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
             maxWidth: '400px',
+            width: '100%',
           },
           success: {
             iconTheme: { primary: '#10b981', secondary: '#f4f4f5' },
@@ -66,9 +68,8 @@ export default function App() {
             style: {
               background: '#7f1d1d',
               border: '1px solid #dc2626',
-              padding: '14px 36px 14px 18px',
             },
-            duration: 8000,
+            duration: 10000,
           },
         }}
       />
