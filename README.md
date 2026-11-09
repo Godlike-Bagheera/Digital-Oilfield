@@ -1,7 +1,6 @@
-
 # Цифровое месторождение (Digital Oilfield)
 
-Веб-дашборд для мониторинга нефтепромыслового оборудования в режиме реального времени с бизнес-логикой ручного ремонта скважин (SCADA-подход).
+Веб-дашборд для мониторинга нефтепромыслового оборудования в режиме реального времени с бизнес-логикой ручного ремонта скважин (SCADA-подход) и адаптивным интерфейсом для мобильных устройств.
 
 Проект разработан в рамках производственной практики в ООО «ТатИТнефть» (дочерняя ИТ-компания ПАО «Татнефть»).
 
@@ -9,7 +8,7 @@
 
 - [О проекте](#о-проекте)
 - [Технологии](#технологии)
-- [Быстрый старт](#быстрый-старт)
+- [Быстрый старт](#быстрый-старт-10-минут)
 - [Развёртывание через Docker](#развёртывание-через-docker)
 - [Ключевые фичи](#ключевые-фичи)
 - [API эндпоинты](#api-эндпоинты)
@@ -17,6 +16,7 @@
 - [Структура проекта](#структура-проекта)
 - [Тестирование](#тестирование)
 - [Возможные проблемы](#возможные-проблемы)
+- [Контакты](#контакты)
 
 ## О проекте
 
@@ -28,141 +28,186 @@
 - Управлять циклом жизни скважины: **работа → авария → ремонт → перезапуск**
 - Экспортировать отчёты в Excel и PDF
 - Визуализировать расположение скважин на карте Ромашкинского месторождения
+- Работать с телефона: адаптивная вёрстка, свайп и кнопка закрытия уведомлений
 
 ### Бизнес-логика
 
 В отличие от учебных проектов, реализована **реальная SCADA-логика**:
 - Скважина после аварии **НЕ чинится автоматически**
 - Требуется ручное вмешательство оператора (кнопка «Завершить ремонт»)
-- Во время ремонта симулятор генерирует «мёртвые» данные (ток=0)
-- После ремонта параметры сбрасываются к идеальным значениям (health_index=100)
+- Во время аварии симулятор генерирует «мёртвые» данные (ток = 0)
+- После ремонта параметры сбрасываются к идеальным значениям (health_index = 100)
 
 ## Технологии
 
 ### Backend
-- Python 3.10+
-- Django 5.0 + Django REST Framework
-- SQLite (для разработки) / PostgreSQL (для production)
-- django-unfold (современная админка с тёмной темой)
-- openpyxl (экспорт в Excel)
-- reportlab (экспорт в PDF с поддержкой кириллицы)
+- Python 3.10–3.12, Django 5.0 + Django REST Framework
+- SQLite (разработка и демо-стенд)
+- django-unfold (админка с тёмной темой и цветными бейджами)
+- openpyxl (экспорт в Excel), reportlab (экспорт в PDF с кириллицей)
 - numpy (математические расчёты)
 
 ### Frontend
-- React 18 + Vite
+- React 18 + Vite, React Router, Axios
 - Tailwind CSS (тёмная тема в стиле Vercel/Linear)
-- Recharts (графики телеметрии)
+- Recharts (графики телеметрии с downsampling)
 - Leaflet + OpenStreetMap (карта месторождения)
-- React Router
-- Axios
-- react-hot-toast (уведомления)
+- react-hot-toast (глобальные уведомления)
+- lucide-react (иконки)
 
 ### Инфраструктура
-- Docker + Docker Compose (контейнерное развёртывание)
-- Nginx (reverse proxy для frontend + API)
-- Git + GitHub (контроль версий)
+- Docker + Docker Compose, Nginx (reverse proxy)
+- Git + GitHub
 
-## Быстрый старт
+## Быстрый старт (10 минут)
+
+Для работы сайта нужны **три терминала**: backend, frontend и симулятор телеметрии. Без симулятора данных нет — сайт будет «пустым».
 
 ### Требования
-- Python 3.10+ ([скачать](https://python.org))
-- Node.js 18+ ([скачать](https://nodejs.org))
+- Python 3.10–3.12
+- Node.js 18+
 - Git
 
-### 1. Клонирование
+### Шаг 1. Клонирование
+
 ```bash
 git clone https://github.com/Godlike-Bagheera/Digital-Oilfield.git
 cd Digital-Oilfield
 ```
 
-### 2. Backend (Django)
-```bash
+### Шаг 2. Backend (терминал 1)
+
+Windows PowerShell:
+
+```powershell
 cd backend
 python -m venv venv
-
-# Windows (CMD):
-venv\Scripts\activate.bat
-# Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
-# Linux/Mac:
-source venv/bin/activate
-
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py create_superuser    # Логин: admin / admin123
-python manage.py create_test_data    # Создаст 10 скважин по 3 ЦДНГ
-python manage.py simulate_once       # Первая порция данных
-python manage.py runserver           # http://127.0.0.1:8000
+python manage.py create_superuser
+python manage.py create_test_data
+python manage.py runserver
 ```
 
-### 3. Frontend (React)
+Windows CMD:
+
+```cmd
+cd backend
+python -m venv venv
+venv\Scripts\activate.bat
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py create_superuser
+python manage.py create_test_data
+python manage.py runserver
+```
+
+Linux / macOS:
+
 ```bash
-# В НОВОМ терминале
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py create_superuser
+python manage.py create_test_data
+python manage.py runserver
+```
+
+Команды `create_superuser` (логин `admin`, пароль `admin123`) и `create_test_data` (10 скважин по 3 ЦДНГ) выполняются один раз.
+
+### Шаг 3. Frontend (терминал 2)
+
+```bash
 cd frontend
 npm install
-npm run dev                          # http://localhost:5173
+npm run dev
 ```
 
-### 4. Открыть сайт
+### Шаг 4. Симулятор телеметрии (терминал 3)
+
+Windows PowerShell:
+
+```powershell
+cd backend
+.\venv\Scripts\Activate.ps1
+python manage.py simulate_demo
+```
+
+Windows CMD:
+
+```cmd
+cd backend
+venv\Scripts\activate.bat
+python manage.py simulate_demo
+```
+
+`simulate_demo` — демонстрационный сценарий: через 15 секунд скважина №108 уходит в аварию с уведомлением, затем скважина №109 проходит цепочку warning → предиктивный алерт → авария. Для «честной» случайной телеметрии вместо него запустите:
+
+```bash
+python manage.py simulate_telemetry --continuous --with-anomalies
+```
+
+### Шаг 5. Открыть в браузере
+
 - http://localhost:5173 — основной интерфейс
-- http://127.0.0.1:8000/admin/ — админка (admin / admin123)
+- http://localhost:5173/admin/ — админка (admin / admin123)
 
 ## Развёртывание через Docker
 
-Для быстрого развёртывания на любом Linux-сервере (Ubuntu, Debian) используйте Docker Compose.
+Тестовый стенд разворачивается на любом Linux-сервере (Ubuntu, Debian) без установки Python и Node.js — всё упаковано в контейнеры.
 
 ### Требования
 - Docker Engine 20.10+
 - Docker Compose V2
 
 ### Запуск
+
 ```bash
-# Клонирование репозитория
 git clone https://github.com/Godlike-Bagheera/Digital-Oilfield.git
 cd Digital-Oilfield
-
-# Сборка и запуск контейнеров
 docker compose up -d --build
-
-# Инициализация данных (один раз)
 docker compose exec backend python manage.py create_test_data
 docker compose exec backend python manage.py create_superuser
-
-# Запуск демо-симулятора (опционально, для показа сценария аварий)
 docker compose exec -d backend python manage.py simulate_demo
 ```
 
 ### Доступ
-- Frontend: `http://<IP_СЕРВЕРА>:8080`
+- Интерфейс: `http://<IP_СЕРВЕРА>:8080`
 - API: `http://<IP_СЕРВЕРА>:8080/api/`
 - Админка: `http://<IP_СЕРВЕРА>:8080/admin/`
 
-### Остановка
+### Остановка и перезапуск
+
 ```bash
-docker compose down        # с сохранением данных
-docker compose down -v     # со сбросом БД
+docker compose stop    # пауза с сохранением данных
+docker compose start   # продолжить работу
+docker compose down    # удалить контейнеры (данные БД сбрасываются!)
 ```
 
 ## Ключевые фичи
 
-1. **Мониторинг 10 скважин** с фильтрами по 3 ЦДНГ и статусу
+1. **Мониторинг 10 скважин** с фильтрами по 3 ЦДНГ, статусу и поиском по номеру
 2. **8 графиков телеметрии** в реальном времени (обновление каждые 5 сек)
-3. **Health Index (0-100%)** с весовыми коэффициентами параметров
+3. **Health Index (0–100%)** с весовыми коэффициентами параметров
 4. **Предиктивная аналитика** — синие алерты о будущих авариях (линейная регрессия)
 5. **Расследование инцидентов** с группировкой аномалий и ReferenceArea на графиках
 6. **Ручной перезапуск** после ремонта с мгновенным сбросом к идеальным параметрам
-7. **Табы «Активные» / «Вся история»** алертов с пагинацией
-8. **Фильтр алертов по дате** (календарь)
-9. **Экспорт телеметрии** в Excel и PDF с поддержкой кириллицы (Arial/DejaVu)
-10. **Сменные отчёты** (Excel/PDF) с повтором шапки на каждой странице
-11. **Unfold админка** с тёмной темой и цветными бейджами статусов
-12. **Симулятор телеметрии** с режимом генерации аномалий
-13. **Демо-режим** для защиты (`simulate_demo`) — сценарий с аварий, warning и предиктивных алертов
-14. **Обучающий режим** с подсказками для молодых специалистов
-15. **Автоматическая генерация алертов** с защитой от дубликатов
-16. **N+1 оптимизация** запросов к БД и downsampling телеметрии до 240 точек
-17. **Интерактивная карта месторождения** (OpenStreetMap + Leaflet) с реальными координатами Ромашкинского месторождения (Татнефть, Альметьевский район) и цветными маркерами по статусу
-18. **Глобальные toast-уведомления** в реальном времени при возникновении аварий (работают на всех страницах сайта)
+7. **Табы «Активные» / «Вся история»** алертов с пагинацией и фильтром по дате
+8. **Экспорт телеметрии** в Excel и PDF с поддержкой кириллицы (Arial/DejaVu)
+9. **Сменные отчёты** (Excel/PDF) с повтором шапки на каждой странице
+10. **Unfold-админка** с тёмной темой, цветными бейджами и массовыми действиями
+11. **Симулятор телеметрии** с режимами continuous и генерации аномалий
+12. **Демо-режим `simulate_demo`** — управляемый сценарий аварий для показа
+13. **Обучающий режим** с подсказками для молодых специалистов
+14. **Автогенерация алертов** с защитой от дубликатов
+15. **Оптимизация производительности**: N+1-запросы, downsampling до 240 точек, React.memo
+16. **Интерактивная карта** Ромашкинского месторождения (Leaflet + OSM) с реальными координатами кустов скважин
+17. **Глобальные toast-уведомления** на всех страницах: закрытие крестиком и свайпом
+18. **Адаптивная вёрстка**: бургер-меню, перестройка сеток, мобильные панели на телефонах
+19. **Локализованные названия параметров** в интерфейсе («Обводнённость» вместо water_cut)
 
 ## API эндпоинты
 
@@ -170,137 +215,108 @@ docker compose down -v     # со сбросом БД
 |-------|-----|----------|
 | GET | /api/wells/ | Список скважин |
 | GET | /api/wells/{id}/ | Детали скважины |
-| GET | /api/wells/{id}/telemetry/?period=24h | Телеметрия |
+| GET | /api/wells/{id}/telemetry/?period=24h | Телеметрия за период |
 | GET | /api/wells/{id}/alerts/ | Алерты скважины |
+| GET | /api/wells/{id}/investigate/?alert_id=N | Данные для расследования |
 | POST | /api/wells/{id}/repair/ | Завершить ремонт |
 | GET | /api/alerts/ | Все алерты |
 | GET | /api/training-tips/ | Обучающие подсказки |
-| POST | /api/wells/export/telemetry/ | Экспорт в Excel |
-| POST | /api/wells/export/telemetry-pdf/ | Экспорт в PDF |
+| POST | /api/wells/export/telemetry/ | Экспорт телеметрии в Excel |
+| POST | /api/wells/export/telemetry-pdf/ | Экспорт телеметрии в PDF |
 | POST | /api/wells/export/shift-report/ | Сменный отчёт (Excel) |
 | POST | /api/wells/export/shift-report-pdf/ | Сменный отчёт (PDF) |
 
 ## Симулятор телеметрии
 
-```bash
-# Однократная генерация
-python manage.py simulate_once
+| Команда | Назначение |
+|---------|------------|
+| `python manage.py simulate_once` | Однократная генерация данных |
+| `python manage.py simulate_telemetry --continuous` | Непрерывный режим (каждые 5 сек) |
+| `python manage.py simulate_telemetry --continuous --with-anomalies` | Непрерывный + случайные аномалии (5%) |
+| `python manage.py simulate_demo` | Демо-сценарий для защиты |
+| `python manage.py create_predictive_test` | Демо-тренд тока для предиктивного алерта |
 
-# Непрерывный режим (данные каждые 5 сек)
-python manage.py simulate_telemetry --continuous
-
-# С аномалиями (обрыв штанг, перегрев)
-python manage.py simulate_telemetry --continuous --with-anomalies
-
-# ДЕМО-РЕЖИМ для защиты — сценарий аварий и уведомлений
-python manage.py simulate_demo
-```
-
-**Демо-режим `simulate_demo`:**
-- 0–15 сек: все скважины работают в штатном режиме
-- 15 сек: скважина №108 → АВАРИЯ (обрыв штанг) + toast-уведомление
-- ~3 мин: скважина №109 → WARNING (обводнённость 90%)
-- ~5 мин: скважина №109 → ПРЕДИКТИВНЫЙ алерт (синий)
-- ~8 мин: скважина №109 → АВАРИЯ (обводнённость 97%)
-- скважина №110: редкие warning-скачки температуры
-
-**Важно:** скважины в статусе alarm или maintenance генерируют только «мёртвые» данные (ток=0) до ручного перезапуска.
+Тайминг демо-сценария `simulate_demo`:
+- 0–15 сек — все скважины в штатном режиме
+- 15 сек — скважина №108: АВАРИЯ (обрыв штанг) + toast
+- ~3 мин — скважина №109: WARNING (обводнённость 90%)
+- ~5 мин — скважина №109: ПРЕДИКТИВНЫЙ алерт
+- ~8 мин — скважина №109: АВАРИЯ (обводнённость 97%)
+- скважина №110 — периодические warning-скачки температуры
 
 ## Структура проекта
 
 ```
 Digital-Oilfield/
 ├── backend/
-│   ├── backend/                 # Настройки Django
-│   │   ├── settings.py          # UNFOLD конфиг, БД
-│   │   ├── urls.py              # Маршруты API
-│   │   └── wsgi.py
+│   ├── backend/                 # Настройки Django (settings, urls, wsgi)
 │   ├── wells/                   # Основное приложение
 │   │   ├── models.py            # Well, TelemetryData, Alert, TrainingTip
-│   │   ├── views.py             # REST API ViewSet
-│   │   ├── serializers.py       # DRF сериализаторы
-│   │   ├── admin.py             # Админка с цветными бейджами
-│   │   ├── constants.py         # Локализация параметров
-│   │   ├── services/
+│   │   ├── views.py             # REST API ViewSet'ы
+│   │   ├── serializers.py       # DRF-сериализаторы
+│   │   ├── admin.py             # Админка: бейджи, массовые действия
+│   │   ├── constants.py         # Словарь названий параметров
+│   │   ├── services/            # Бизнес-логика
 │   │   │   ├── health_calculator.py
 │   │   │   ├── alert_generator.py
+│   │   │   ├── incident_investigation.py
 │   │   │   ├── excel_export.py
-│   │   │   ├── pdf_export.py
-│   │   │   └── incident_investigation.py
-│   │   └── management/commands/
-│   │       ├── create_test_data.py       # 10 скважин (ЦДНГ 4+3+3, координаты кустов)
-│   │       ├── create_superuser.py       # admin / admin123
-│   │       ├── create_predictive_test.py # демо-тренд тока для предиктивного алерта
-│   │       ├── simulate_once.py
-│   │       ├── simulate_telemetry.py     # честный симулятор с рандомом
-│   │       └── simulate_demo.py          # сценарий для защиты
+│   │   │   └── pdf_export.py
+│   │   └── management/commands/ # create_test_data, simulate_*, ...
+│   ├── static/admin/css/        # Кастомные стили админки
+│   ├── Dockerfile
 │   ├── manage.py
-│   ├── Dockerfile               # Контейнеризация backend
-│   ├── test_system.py           # Тесты backend
+│   ├── test_system.py
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── components/          # WellCard, TelemetryChart, InvestigationModal
+│   │   ├── components/          # WellCard, TelemetryChart, InvestigationModal...
 │   │   ├── pages/               # Dashboard, WellDetail, AlertsPage, ReportsPage, MapPage
-│   │   ├── services/            # api.js
 │   │   ├── hooks/               # useAlertNotifications.js
-│   │   ├── utils/               # predictions.js, parameters.js, downsample.js
+│   │   ├── services/            # api.js
+│   │   ├── utils/               # parameters.js, downsample.js, predictions.js
 │   │   └── App.jsx
-│   ├── index.html
+│   ├── Dockerfile
+│   ├── nginx.conf
 │   ├── vite.config.js
-│   ├── nginx.conf               # Конфиг Nginx для контейнера
-│   ├── Dockerfile               # Контейнеризация frontend
 │   └── package.json
-├── docker-compose.yml           # Оркестрация контейнеров
-├── test_all.py                  # Комплексный тест
+├── screenshots/                 # Скриншоты интерфейса
+├── docker-compose.yml
+├── test_all.py
 └── README.md
 ```
 
 ## Тестирование
 
 ```bash
-# Из корня проекта
+# Комплексный тест (из корня проекта)
 python test_all.py
 
 # Только backend
 cd backend && python test_system.py
 
-# Только frontend
+# Только frontend (сборка без ошибок)
 cd frontend && npm run build
 ```
 
 ## Возможные проблемы
 
 ### 1. PowerShell: «выполнение сценариев отключено»
-**Решение:**
+Выполните один раз в текущей сессии или используйте CMD:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 ```
-Или используйте CMD вместо PowerShell.
 
-### 2. 403 Forbidden на /api/wells/{id}/repair/
-**Решение:** добавьте в декоратор метода:
-```python
-@action(..., permission_classes=[AllowAny], authentication_classes=[])
-```
+### 2. Чёрные квадраты вместо русского текста в PDF
+В `pdf_export.py` в списке `font_candidates` должен быть путь к шрифту с кириллицей: `C:\Windows\Fonts\arial.ttf` (Windows) или DejaVuSans (Linux). В Docker-контейнере шрифты DejaVu устанавливаются автоматически.
 
-### 3. Чёрные квадраты вместо русского текста в PDF
-**Решение:** проверьте в pdf_export.py что в font_candidates есть путь к C:\Windows\Fonts\arial.ttf (Windows) или DejaVuSans.ttf (Linux). В Docker-контейнере DejaVu устанавливается автоматически.
+### 3. Белый экран в браузере (React crash)
+Откройте консоль DevTools (F12). Историческая причина — обращение к старым полям аномалий (`a.z_score` вместо `a.z_score_max`); в актуальной версии исправлено.
 
-### 4. 404 на /favicon.ico
-**Решение:** добавьте inline SVG в index.html:
-```html
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>ЦМ</text></svg>">
-```
-
-### 5. Белый экран в браузере (React crash)
-**Решение:** проверьте консоль DevTools (F12). Обычно проблема в обращении к старым полям аномалий (a.z_score вместо a.z_score_max).
-
-### 6. Все скважины в ЦДНГ-1
-**Решение:** запустите:
-```bash
-cd backend
-python manage.py shell -c "from wells.models import Well; Well.objects.filter(number__in=[105,106,107]).update(cdng='ЦДНГ-2'); Well.objects.filter(number__in=[108,109,110]).update(cdng='ЦДНГ-3')"
+### 4. npm не найдена в Windows
+Если Node.js установлен в нестандартную папку, добавьте её в PATH сессии:
+```cmd
+set PATH=D:\node;%PATH%
 ```
 
 ## Контакты
@@ -308,13 +324,8 @@ python manage.py shell -c "from wells.models import Well; Well.objects.filter(nu
 **Разработчик:** студент Альметьевского политехнического техникума (АПТ)
 **Место практики:** ООО «ТатИТнефть» — дочерняя ИТ-компания ПАО «Татнефть»
 **Руководитель практики от предприятия:** Махалов Роман Дмитриевич
-**Дата:** Ноябрь 2026
+**Дата:** ноябрь 2026
 
 ## Лицензия
 
 Учебный проект. Все права защищены.
-
-
-3. **Docker-файлы** (6 штук) ещё не добавлены в репо — скажи **«докер»** когда будешь готов, дам готовый комплект.
-
-Какой шаг делаем следующим? 🚀
