@@ -191,7 +191,6 @@ export default function WellDetail() {
         <span className="font-medium text-zinc-300">Скважина {well.number}</span>
       </nav>
 
-      {/* Шапка скважины */}
       <div className="mb-6">
         <div className="flex flex-col gap-6 rounded-2xl border border-zinc-800/80 bg-[#121215] p-4 shadow-2xl ring-1 ring-white/5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex-1">
@@ -226,7 +225,7 @@ export default function WellDetail() {
                 onClick={() => setTrainingMode((v) => !v)}
                 className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
               >
-                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${trainingMode ? 'translate-x-4.5' : 'translate-x-1'}`} />
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${trainingMode ? 'translate-x-4' : 'translate-x-1'}`} />
               </button>
             </label>
           </div>
@@ -244,14 +243,12 @@ export default function WellDetail() {
         </div>
       )}
 
-      {/* Графики */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
         {charts.map((c) => (
           <TelemetryChart key={c.key} {...c} data={chartData(c.key)} trainingMode={trainingMode} trainingTip={c.tip ? trainingTips[c.tip] : null} period={period} />
         ))}
       </div>
 
-      {/* Алерты */}
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-zinc-50 md:text-xl">Алерты</h2>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -284,7 +281,6 @@ export default function WellDetail() {
         )}
       </section>
 
-      {/* Экспорт - сетка 2х2 на телефоне */}
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-zinc-50 md:text-xl">Действия</h2>
         <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
