@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { getParameterLabel, formatParameterValue, humanizeMessage } from '../utils/parameters';
+import { X } from 'lucide-react';
+import { humanizeMessage } from '../utils/parameters';
 
 /**
  * Глобальные toast-уведомления о новых алертах (подключены в App — работают на всех страницах).
@@ -19,44 +20,78 @@ function formatTime(iso) {
   return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
+/**
+ * Универсальная обертка для контента тоста с кнопкой закрытия.
+ */
+function ToastContent({ title, message, time, toastId, isList = false, items = [] }) {
+  return (
+    <div className="flex w-full items-start justify-between gap-3">
+      <div className="flex-1">
+        <div className="mb-1 font-semibold text-sm">{title}</div>
+        {isList ? (
+          <ul className="list-disc space-y-0.5 pl-4 text-sm opacity-90">
+            {items.map((item, i) => <li key={i}>{item}</li>)}
+          </ul>
+        ) : (
+          <div className="text-sm opacity-90">{message}</div>
+        )}
+        {time && <div className="mt-1 text-xs opacity-60">{time}</div>}
+      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toast.dismiss(toastId);
+        }}
+        className="shrink-0 rounded-md p-1.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+        title="Закрыть"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+}
+
 function showSingleToast(alert) {
   const isCritical = alert.alert_type === 'critical';
   const toastFn = isCritical ? toast.error : toast;
+  const toastId = `alert-${alert.id}`;
+
   toastFn(
-    <div>
-      <div className="mb-1 font-semibold">
-        {isCritical ? 'Критическая авария' : 'Предупреждение'} · Скважина №{wellNumberOf(alert)}
-      </div>
-      <div className="text-sm opacity-90">{humanizeMessage(alert.message)}</div>
-      <div className="mt-1 text-xs opacity-60">{formatTime(alert.created_at)}</div>
-    </div>,
-    { id: `alert-${alert.id}`, duration: isCritical ? 8000 : 5000 }
+    <ToastContent
+      title={`${isCritical ? 'Критическая авария' : 'Предупреждение'} · Скважина №${wellNumberOf(alert)}`}
+      message={humanizeMessage(alert.message)}
+      time={formatTime(alert.created_at)}
+      toastId={toastId}
+    />,
+    { id: toastId, duration: isCritical ? 8000 : 5000 }
   );
 }
 
 function showWellGroupToast(wellNum, alerts) {
   const hasCritical = alerts.some((a) => a.alert_type === 'critical');
   const toastFn = hasCritical ? toast.error : toast;
+  const toastId = `well-${wellNum}`;
+
   toastFn(
-    <div>
-      <div className="mb-1 font-semibold">Скважина №{wellNum}: {alerts.length} проблемы</div>
-      <ul className="list-disc space-y-0.5 pl-4 text-sm opacity-90">
-        {alerts.map((a) => <li key={a.id}>{humanizeMessage(a.message)}</li>)}
-      </ul>
-    </div>,
-    { id: `well-${wellNum}`, duration: 8000 }
+    <ToastContent
+      title={`Скважина №${wellNum}: ${alerts.length} проблемы`}
+      isList={true}
+      items={alerts.map(a => humanizeMessage(a.message))}
+      toastId={toastId}
+    />,
+    { id: toastId, duration: 8000 }
   );
 }
 
 function showSummaryToast(count) {
+  const toastId = SUMMARY_TOAST_ID;
   toast.error(
-    <div>
-      <div className="mb-1 font-semibold">Массовая авария</div>
-      <div className="text-sm opacity-90">
-        Зафиксировано {count} новых алертов. Подробности на странице «Алерты».
-      </div>
-    </div>,
-    { id: SUMMARY_TOAST_ID, duration: 8000 }
+    <ToastContent
+      title="Массовая авария"
+      message={`Зафиксировано ${count} новых алертов. Подробности на странице «Алерты».`}
+      toastId={toastId}
+    />,
+    { id: toastId, duration: 8000 }
   );
 }
 
