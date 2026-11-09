@@ -191,22 +191,27 @@ export default function WellDetail() {
         <span className="font-medium text-zinc-300">Скважина {well.number}</span>
       </nav>
 
+      {/* Шапка скважины */}
       <div className="mb-6">
-        <div className="flex flex-col gap-6 rounded-2xl border border-zinc-800/80 bg-[#121215] p-4 shadow-2xl ring-1 ring-white/5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-6 rounded-2xl border border-zinc-800/80 bg-[#121215] p-5 shadow-2xl ring-1 ring-white/5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+          
+          {/* Левая часть: Инфо */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold tracking-tight text-zinc-50 md:text-4xl">
               Скважина №{well.number}
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-1 text-sm text-zinc-400">
               {well.cdng} · {well.pump_type_display || well.pump_type}
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.cls}`}>{badge.text}</span>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium border ${badge.cls}`}>
+                {badge.text}
+              </span>
               {(well.status === 'alarm' || well.status === 'maintenance') && (
                 <button
                   onClick={() => setShowRepairConfirm(true)}
                   disabled={isRepairing}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white shadow-lg transition-colors hover:bg-rose-500 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-1.5 text-xs font-medium text-white shadow-lg transition-colors hover:bg-rose-500 disabled:opacity-50"
                 >
                   {isRepairing ? <Loader2 size={14} className="animate-spin" /> : <Wrench size={14} />}
                   Ремонт
@@ -215,19 +220,42 @@ export default function WellDetail() {
             </div>
           </div>
 
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            {healthIndex !== null && <HealthGauge value={healthIndex} size={100} />}
-            <label className="flex cursor-pointer select-none items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-3 py-2">
-              <span className="text-xs text-zinc-400">Обучение</span>
-              <button
-                type="button"
-                role="switch"
-                onClick={() => setTrainingMode((v) => !v)}
-                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
-              >
-                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${trainingMode ? 'translate-x-4' : 'translate-x-1'}`} />
-              </button>
-            </label>
+          {/* Правая часть: Кольцо и Тумблер */}
+          {/* На мобилке делаем красивую панель с рамкой, на ПК убираем рамку */}
+          <div className="flex items-center justify-between gap-6 rounded-xl border border-zinc-800/80 bg-[#09090b]/50 p-4 sm:justify-start sm:border-0 sm:bg-transparent sm:p-0">
+            
+            {/* Кольцо */}
+            <div className="flex flex-col items-center gap-2">
+              {healthIndex !== null ? (
+                <HealthGauge value={healthIndex} size={90} />
+              ) : (
+                <div className="flex h-[90px] w-[90px] items-center justify-center rounded-full border-4 border-zinc-800 text-sm text-zinc-500">
+                  Нет
+                </div>
+              )}
+              <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">Здоровье</span>
+            </div>
+
+            {/* Разделитель для мобилки */}
+            <div className="h-12 w-px bg-zinc-800 sm:hidden" />
+
+            {/* Тумблер обучения */}
+            <div className="flex flex-col items-center gap-2">
+              <label className="flex cursor-pointer select-none flex-col items-center gap-2">
+                <button
+                  type="button"
+                  role="switch"
+                  onClick={() => setTrainingMode((v) => !v)}
+                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
+                >
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+                <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">
+                  {trainingMode ? 'Вкл' : 'Выкл'}
+                </span>
+              </label>
+            </div>
+
           </div>
         </div>
       </div>
