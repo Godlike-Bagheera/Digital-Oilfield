@@ -90,9 +90,13 @@ CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173']
 CORS_ALLOW_ALL_ORIGINS = True
 
 # ВАЖНО: фикс 403 (CSRF). Разрешаем запросы с фронтенда (Vite)
+
+
 CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8084',
+    'http://127.0.0.1:8084',
     'http://localhost:5173',
-    'http://127.0.0.1:5173',
+    'http://localhost:8000',
 ]
 
 REST_FRAMEWORK = {
