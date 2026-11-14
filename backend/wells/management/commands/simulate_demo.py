@@ -83,12 +83,15 @@ class Command(BaseCommand):
             well.save(update_fields=['status'])
 
     def _create_alert(self, well, alert_type, parameter, message, value, threshold):
-        """Создаёт алерт с УНИКАЛЬНЫМ параметром чтобы фронтенд показал toast"""
-        # Закрываем все старые активные алерты этой скважины
-        Alert.objects.filter(well=well, is_active=True).update(
-            is_active=False, resolved_at=timezone.now()
-        )
-        # Создаём НОВЫЙ алерт (уникальный timestamp)
+        """Создаёт алерт с каноническим параметром (temperature/water_cut/...).
+        Закрывает только старые активные алерты по ЭТОМУ же параметру,
+        чтобы не затирать алерты других параметров той же скважины."""
+        Alert.objects.filter(
+            well=well,
+            parameter=parameter,
+            is_active=True
+        ).update(is_active=False, resolved_at=timezone.now())
+
         return Alert.objects.create(
             well=well,
             alert_type=alert_type,
@@ -140,7 +143,7 @@ class Command(BaseCommand):
                 well.status = 'alarm'
                 well.save(update_fields=['status'])
                 self._create_alert(
-                    well, 'critical', 'water_cut_critical',
+                    well, 'critical', 'water_cut',
                     f'Критическая обводнённость продукции: Обводнённость = {wc:.1f}% (порог {WC_CRITICAL}%)',
                     wc, WC_CRITICAL
                 )
@@ -151,7 +154,7 @@ class Command(BaseCommand):
                 well.status = 'warning'
                 well.save(update_fields=['status'])
                 self._create_alert(
-                    well, 'warning', 'water_cut_warning',
+                    well, 'warning', 'water_cut',
                     f'Рост обводнённости продукции: Обводнённость = {wc:.1f}% (порог {WC_WARNING}%)',
                     wc, WC_WARNING
                 )
@@ -170,7 +173,7 @@ class Command(BaseCommand):
             well.status = 'warning'
             well.save(update_fields=['status'])
             self._create_alert(
-                well, 'warning', f'temp_{int(elapsed)}',
+                well, 'warning', 'temperature',
                 f'Повышенная температура оборудования: Температура = {data["temperature"]:.1f}°C (порог 85°C)',
                 data['temperature'], 85.0
             )
