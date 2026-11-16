@@ -220,8 +220,7 @@ export default function WellDetail() {
             </div>
           </div>
 
-          {/* Правая часть: кольцо здоровья и тумблер обучения.
-              На мобилке — панель с рамкой, на ПК — без рамки в одну строку */}
+          {/* Правая часть: Кольцо и Тумблер */}
           <div className="flex items-center justify-between gap-6 rounded-xl border border-zinc-800/80 bg-[#09090b]/50 p-4 sm:justify-start sm:border-0 sm:bg-transparent sm:p-0">
 
             {/* Кольцо */}
@@ -241,20 +240,21 @@ export default function WellDetail() {
 
             {/* Тумблер обучения */}
             <div className="flex flex-col items-center gap-2">
-              <label className="flex cursor-pointer select-none flex-col items-center gap-2">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={trainingMode}
-                  onClick={() => setTrainingMode((v) => !v)}
-                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
-                >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-                <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">
-                  Обучение · {trainingMode ? 'Вкл' : 'Выкл'}
-                </span>
-              </label>
+              <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">Обучение</span>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={trainingMode}
+                onClick={() => setTrainingMode((v) => !v)}
+                className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+
+              <span className={`text-[11px] uppercase tracking-wider font-medium ${trainingMode ? 'text-blue-400' : 'text-zinc-500'}`}>
+                {trainingMode ? 'Вкл' : 'Выкл'}
+              </span>
             </div>
 
           </div>
@@ -272,14 +272,12 @@ export default function WellDetail() {
         </div>
       )}
 
-      {/* Графики */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
         {charts.map((c) => (
           <TelemetryChart key={c.key} {...c} data={chartData(c.key)} trainingMode={trainingMode} trainingTip={c.tip ? trainingTips[c.tip] : null} period={period} />
         ))}
       </div>
 
-      {/* Алерты */}
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-zinc-50 md:text-xl">Алерты</h2>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -312,7 +310,6 @@ export default function WellDetail() {
         )}
       </section>
 
-      {/* Экспорт — сетка 2х2 на телефоне */}
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-zinc-50 md:text-xl">Действия</h2>
         <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
