@@ -163,12 +163,12 @@ export default function WellDetail() {
   const charts = [
     { title: 'Ток двигателя', unit: 'А', color: '#3b82f6', icon: <Zap size={18} />, key: 'current', tip: 'current' },
     { title: 'Давление затрубное', unit: 'МПа', color: '#ef4444', icon: <Gauge size={18} />, key: 'casing_pressure', tip: 'casing_pressure' },
-    { title: 'Давление нагнетательное', unit: 'МПа', color: '#f97316', icon: <Activity size={18} />, key: 'discharge_pressure', tip: null },
+    { title: 'Давление нагнетательное', unit: 'МПа', color: '#f97316', icon: <Activity size={18} />, key: 'discharge_pressure', tip: 'discharge_pressure' },
     { title: 'Температура', unit: '°C', color: '#eab308', icon: <Thermometer size={18} />, key: 'temperature', tip: 'temperature' },
-    { title: 'Дебит жидкости', unit: 'м³/сут', color: '#8b5cf6', icon: <Droplet size={18} />, key: 'flow_rate_liquid', tip: null },
+    { title: 'Дебит жидкости', unit: 'м³/сут', color: '#8b5cf6', icon: <Droplet size={18} />, key: 'flow_rate_liquid', tip: 'flow_rate_liquid' },
     { title: 'Дебит нефти', unit: 'т/сут', color: '#22c55e', icon: <Fuel size={18} />, key: 'flow_rate_oil', tip: 'flow_rate_oil' },
     { title: 'Обводнённость', unit: '%', color: '#06b6d4', icon: <Waves size={18} />, key: 'water_cut', tip: 'water_cut' },
-    { title: 'Число качаний', unit: 'кач/мин', color: '#ec4899', icon: <RotateCw size={18} />, key: 'stroke_rate', tip: null },
+    { title: 'Число качаний', unit: 'кач/мин', color: '#ec4899', icon: <RotateCw size={18} />, key: 'stroke_rate', tip: 'stroke_rate' },
   ];
 
   const filteredAlerts = alerts.filter(a => {
@@ -194,7 +194,7 @@ export default function WellDetail() {
       {/* Шапка скважины */}
       <div className="mb-6">
         <div className="flex flex-col gap-6 rounded-2xl border border-zinc-800/80 bg-[#121215] p-5 shadow-2xl ring-1 ring-white/5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
-          
+
           {/* Левая часть: Инфо */}
           <div className="flex-1">
             <h1 className="text-3xl font-bold tracking-tight text-zinc-50 md:text-4xl">
@@ -220,9 +220,10 @@ export default function WellDetail() {
             </div>
           </div>
 
-          {/* Правая часть: Кольцо и Тумблер */}
+          {/* Правая часть: кольцо здоровья и тумблер обучения.
+              На мобилке — панель с рамкой, на ПК — без рамки в одну строку */}
           <div className="flex items-center justify-between gap-6 rounded-xl border border-zinc-800/80 bg-[#09090b]/50 p-4 sm:justify-start sm:border-0 sm:bg-transparent sm:p-0">
-            
+
             {/* Кольцо */}
             <div className="flex flex-col items-center gap-2">
               {healthIndex !== null ? (
@@ -240,20 +241,20 @@ export default function WellDetail() {
 
             {/* Тумблер обучения */}
             <div className="flex flex-col items-center gap-2">
-              <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">Обучение</span>
-              
-              <button
-                type="button"
-                role="switch"
-                onClick={() => setTrainingMode((v) => !v)}
-                className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
-              >
-                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
-              
-              <span className={`text-[11px] uppercase tracking-wider font-medium ${trainingMode ? 'text-blue-400' : 'text-zinc-500'}`}>
-                {trainingMode ? 'Вкл' : 'Выкл'}
-              </span>
+              <label className="flex cursor-pointer select-none flex-col items-center gap-2">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={trainingMode}
+                  onClick={() => setTrainingMode((v) => !v)}
+                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none ${trainingMode ? 'bg-blue-600' : 'bg-zinc-700'}`}
+                >
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${trainingMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+                <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-medium">
+                  Обучение · {trainingMode ? 'Вкл' : 'Выкл'}
+                </span>
+              </label>
             </div>
 
           </div>
@@ -271,12 +272,14 @@ export default function WellDetail() {
         </div>
       )}
 
+      {/* Графики */}
       <div className="mb-8 grid grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2">
         {charts.map((c) => (
           <TelemetryChart key={c.key} {...c} data={chartData(c.key)} trainingMode={trainingMode} trainingTip={c.tip ? trainingTips[c.tip] : null} period={period} />
         ))}
       </div>
 
+      {/* Алерты */}
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-zinc-50 md:text-xl">Алерты</h2>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -309,6 +312,7 @@ export default function WellDetail() {
         )}
       </section>
 
+      {/* Экспорт — сетка 2х2 на телефоне */}
       <section className="mb-8">
         <h2 className="mb-4 text-lg font-semibold text-zinc-50 md:text-xl">Действия</h2>
         <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
