@@ -26,7 +26,6 @@ WC_WARNING = 90.0
 WC_CRITICAL = 97.0
 WC_GROWTH_PER_SEC = (WC_CRITICAL - 45.0) / (8 * 60)
 
-
 class Command(BaseCommand):
     help = 'Демо-симулятор: все события с уведомлениями'
 
@@ -159,6 +158,36 @@ class Command(BaseCommand):
                     wc, WC_WARNING
                 )
                 self.stdout.write(self.style.WARNING(f'   Скважина {well.number}: WARNING (обводнённость {wc:.1f}%) 🔔'))
+
+        # ПРЕДИКТИВНЫЙ алерт: на ~5-й минуте фиксируем прогноз достижения
+        # критической обводнённости по текущему тренду. Создаётся напрямую
+        # (без _create_alert), чтобы не закрывать активный warning по water_cut.
+        # Закроется автоматически на 8-й минуте вместе с warning, когда
+        # _create_alert создаст критический алерт по тому же параметру.
+        if elapsed >= 300 and wc < WC_CRITICAL:
+            already = Alert.objects.filter(
+                well=well,
+                parameter='water_cut',
+                alert_type='predictive',
+                is_active=True
+            ).exists()
+            if not already:
+                minutes_left = max(1, round((WC_CRITICAL - wc) / WC_GROWTH_PER_SEC / 60))
+                Alert.objects.create(
+                    well=well,
+                    alert_type='predictive',
+                    parameter='water_cut',
+                    message=(
+                        f'Прогноз: обводнённость достигнет {WC_CRITICAL:.0f}% '
+                        f'через ~{minutes_left} мин (текущее значение {wc:.1f}%)'
+                    ),
+                    value=wc,
+                    threshold=WC_CRITICAL,
+                    is_active=True,
+                )
+                self.stdout.write(self.style.NOTICE(
+                    f'  🔮 Скважина {well.number}: ПРЕДИКТИВНЫЙ алерт (прогноз ~{minutes_left} мин) 🔔'
+                ))
 
     def _wobble_well(self, well, elapsed):
         data = {k: round(v + random.uniform(-v*0.03, v*0.03), 2) for k, v in BASE_VALUES.items()}
