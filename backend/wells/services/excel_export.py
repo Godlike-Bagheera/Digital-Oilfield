@@ -6,7 +6,6 @@ from django.utils import timezone
 from datetime import timedelta
 from wells.models import Well, TelemetryData, Alert
 
-
 def export_telemetry_to_excel(well_id, period='24h'):
     """Экспорт телеметрии скважины в Excel"""
     well = Well.objects.get(id=well_id)
@@ -34,7 +33,7 @@ def export_telemetry_to_excel(well_id, period='24h'):
     ws['A1'].font = Font(size=14, bold=True)
     ws['A2'] = f"ЦДНГ: {well.cdng}"
     ws['A3'] = f"Период: {period}"
-    ws['A4'] = f"Дата экспорта: {now.strftime('%Y-%m-%d %H:%M')}"
+    ws['A4'] = f"Дата экспорта: {timezone.localtime(now).strftime('%Y-%m-%d %H:%M')}"
 
     headers = ['Время', 'Ток (А)', 'Давление затрубное (МПа)', 'Давление нагнетательное (МПа)',
                'Температура (°C)', 'Дебит жидкости (м³/сут)', 'Дебит нефти (т/сут)',
@@ -46,7 +45,7 @@ def export_telemetry_to_excel(well_id, period='24h'):
         cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
 
     for row, record in enumerate(telemetry, start=7):
-        ws.cell(row=row, column=1, value=record.timestamp.strftime('%Y-%m-%d %H:%M:%S'))
+        ws.cell(row=row, column=1, value=timezone.localtime(record.timestamp).strftime('%Y-%m-%d %H:%M:%S'))
         ws.cell(row=row, column=2, value=record.current)
         ws.cell(row=row, column=3, value=record.casing_pressure)
         ws.cell(row=row, column=4, value=record.discharge_pressure)
@@ -57,7 +56,7 @@ def export_telemetry_to_excel(well_id, period='24h'):
         ws.cell(row=row, column=9, value=record.stroke_rate)
         ws.cell(row=row, column=10, value=record.health_index)
 
-    filename = f"telemetry_well_{well.number}_{period}_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
+    filename = f"telemetry_well_{well.number}_{period}_{timezone.localtime(now).strftime('%Y%m%d_%H%M%S')}.xlsx"
     from django.conf import settings
     filepath = os.path.join(str(settings.MEDIA_ROOT), 'exports', filename)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -65,11 +64,10 @@ def export_telemetry_to_excel(well_id, period='24h'):
 
     return filepath
 
-
 def export_shift_report_to_excel(well_ids=None, date=None):
     """Экспорт сменного отчёта"""
     if date is None:
-        date = timezone.now().date()
+        date = timezone.localdate()
 
     if well_ids is None:
         wells = Well.objects.filter(is_active=True)
@@ -113,7 +111,7 @@ def export_shift_report_to_excel(well_ids=None, date=None):
         cell.font = Font(bold=True)
 
     for row, alert in enumerate(alerts, start=2):
-        ws2.cell(row=row, column=1, value=alert.created_at.strftime('%H:%M:%S'))
+        ws2.cell(row=row, column=1, value=timezone.localtime(alert.created_at).strftime('%H:%M:%S'))
         ws2.cell(row=row, column=2, value=alert.well.number)
         ws2.cell(row=row, column=3, value=alert.alert_type)
         ws2.cell(row=row, column=4, value=alert.parameter)
