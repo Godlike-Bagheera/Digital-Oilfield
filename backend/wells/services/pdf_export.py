@@ -47,7 +47,6 @@ _FONT_BOLD_CANDIDATES = [
     '/Library/Fonts/Arial Bold.ttf',
 ]
 
-
 def _try_register(name, candidates):
     for path in candidates:
         if os.path.exists(path):
@@ -59,7 +58,6 @@ def _try_register(name, candidates):
                 print(f"Failed to register {path}: {e}")
                 continue
     return None
-
 
 def _register_cyrillic_fonts():
     """Регистрирует шрифты с поддержкой кириллицы. Возвращает (regular, bold)."""
@@ -80,9 +78,7 @@ def _register_cyrillic_fonts():
     print("WARNING: No Cyrillic font found, using Helvetica (Cyrillic will be broken)")
     return 'Helvetica', 'Helvetica-Bold'
 
-
 FONT_REGULAR, FONT_BOLD = _register_cyrillic_fonts()
-
 
 def _apply_base_styles(styles):
     """Ставит кириллический шрифт в базовые стили getSampleStyleSheet()."""
@@ -90,7 +86,6 @@ def _apply_base_styles(styles):
         if style_name in styles.byName:
             styles[style_name].fontName = FONT_BOLD if style_name.startswith('Heading') or style_name == 'Title' else FONT_REGULAR
     return styles
-
 
 def _build_table_style(header_bg_hex='#1e40af', zebra_alt='#f3f4f6', body_fontsize=9, header_fontsize=10):
     """
@@ -119,7 +114,6 @@ def _build_table_style(header_bg_hex='#1e40af', zebra_alt='#f3f4f6', body_fontsi
         ('TOPPADDING', (0, 0), (-1, -1), 4),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
     ])
-
 
 def create_telemetry_pdf(well_id, period='24h'):
     """Создание PDF отчёта по телеметрии скважины"""
@@ -177,7 +171,7 @@ def create_telemetry_pdf(well_id, period='24h'):
         ['Тип насоса', well.get_pump_type_display()],
         ['Статус', well.get_status_display()],
         ['Период отчёта', f'{period}'],
-        ['Дата формирования', now.strftime('%d.%m.%Y %H:%M')],
+        ['Дата формирования', timezone.localtime(now).strftime('%d.%m.%Y %H:%M')],
         ['Количество записей', str(len(telemetry))]
     ]
 
@@ -219,7 +213,7 @@ def create_telemetry_pdf(well_id, period='24h'):
 
     for record in telemetry[-20:]:
         telemetry_data.append([
-            record.timestamp.strftime('%d.%m %H:%M'),
+            timezone.localtime(record.timestamp).strftime('%d.%m %H:%M'),
             f'{record.current:.1f}',
             f'{record.casing_pressure:.2f}',
             f'{record.temperature:.1f}',
@@ -241,13 +235,13 @@ def create_telemetry_pdf(well_id, period='24h'):
     # Подвал
     elements.append(Spacer(1, 1*cm))
     footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=colors.grey, alignment=1)
-    elements.append(Paragraph(f"Сформировано автоматически системой 'Цифровое месторождение' | {now.strftime('%d.%m.%Y %H:%M:%S')}", footer_style))
+    elements.append(Paragraph(f"Сформировано автоматически системой 'Цифровое месторождение' | {timezone.localtime(now).strftime('%d.%m.%Y %H:%M:%S')}", footer_style))
 
     # Генерация PDF
     doc.build(elements)
 
     # Сохранение файла
-    filename = f"telemetry_well_{well.number}_{period}_{now.strftime('%Y%m%d_%H%M%S')}.pdf"
+    filename = f"telemetry_well_{well.number}_{period}_{timezone.localtime(now).strftime('%Y%m%d_%H%M%S')}.pdf"
     filepath = os.path.join(settings.MEDIA_ROOT, 'exports', filename)
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
@@ -256,11 +250,10 @@ def create_telemetry_pdf(well_id, period='24h'):
 
     return filepath
 
-
 def create_shift_report_pdf(well_ids=None, date=None):
     """Создание PDF сменного отчёта"""
     if date is None:
-        date = timezone.now().date()
+        date = timezone.localdate()
 
     if well_ids is None:
         wells = Well.objects.filter(is_active=True)
@@ -308,7 +301,7 @@ def create_shift_report_pdf(well_ids=None, date=None):
 
         for alert in alerts[:30]:
             alerts_data.append([
-                alert.created_at.strftime('%H:%M:%S'),
+                timezone.localtime(alert.created_at).strftime('%H:%M:%S'),
                 f'№{alert.well.number}',
                 alert.get_alert_type_display(),
                 alert.parameter,
@@ -324,7 +317,7 @@ def create_shift_report_pdf(well_ids=None, date=None):
     elements.append(Spacer(1, 1*cm))
     footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=colors.grey, alignment=1)
     now = timezone.now()
-    elements.append(Paragraph(f"Сформировано автоматически системой 'Цифровое месторождение' | {now.strftime('%d.%m.%Y %H:%M:%S')}", footer_style))
+    elements.append(Paragraph(f"Сформировано автоматически системой 'Цифровое месторождение' | {timezone.localtime(now).strftime('%d.%m.%Y %H:%M:%S')}", footer_style))
 
     # Генерация PDF
     doc.build(elements)
